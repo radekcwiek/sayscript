@@ -1,5 +1,6 @@
 import sys
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QTextCharFormat, QFont
 from PySide6.QtWidgets import (
     QApplication,
@@ -236,6 +237,46 @@ class MiniEditor(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def set_heading(self, level: int) -> None:
+        fmt = QTextCharFormat()
+
+        if level == 1:
+            fmt.setFontPointSize(24)
+            fmt.setFontWeight(QFont.Weight.Bold)
+        elif level == 2:
+            fmt.setFontPointSize(18)
+            fmt.setFontWeight(QFont.Weight.Bold)
+        else:
+            fmt.setFontPointSize(12)
+            fmt.setFontWeight(QFont.Weight.Normal)
+
+        cursor = self.editor.textCursor()
+        cursor.mergeCharFormat(fmt)
+        self.editor.mergeCurrentCharFormat(fmt)
+
+
+    def set_normal_text(self) -> None:
+        fmt = QTextCharFormat()
+        fmt.setFontPointSize(12)
+        fmt.setFontWeight(QFont.Weight.Normal)
+        fmt.setFontItalic(False)
+
+        cursor = self.editor.textCursor()
+        cursor.mergeCharFormat(fmt)
+        self.editor.mergeCurrentCharFormat(fmt)
+
+
+    def align_left(self) -> None:
+        self.editor.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+
+    def align_center(self) -> None:
+        self.editor.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+
+    def align_right(self) -> None:
+        self.editor.setAlignment(Qt.AlignmentFlag.AlignRight)
 
 
 def main():

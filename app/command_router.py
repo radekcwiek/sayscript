@@ -82,6 +82,48 @@ class CommandRouter:
                 "neues dokument",
                 "dokument neu",
             },
+            "heading_1": {
+                "überschrift 1",
+                "überschrift eins",
+                "hauptüberschrift",
+                "titel",
+                "mache überschrift 1",
+                "mach überschrift 1",
+            },
+            "heading_2": {
+                "überschrift 2",
+                "überschrift zwei",
+                "unterüberschrift",
+                "mache überschrift 2",
+                "mach überschrift 2",
+            },
+            "normal_text": {
+                "normaler text",
+                "normaltext",
+                "standard text",
+                "standardtext",
+                "text normal",
+                "normale schrift",
+            },
+            "align_left": {
+                "linksbündig",
+                "links ausrichten",
+                "text links",
+                "linke ausrichtung",
+            },
+            "align_center": {
+                "zentrieren",
+                "zentriert",
+                "mittig",
+                "text zentrieren",
+                "zentriert ausrichten",
+            },
+            "align_right": {
+                "rechtsbündig",
+                "rechts ausrichten",
+                "text rechts",
+                "rechte ausrichtung",
+            },
         }
 
     def execute(self, command: str) -> None:
@@ -149,6 +191,30 @@ class CommandRouter:
                 self.editor_window.show_status_message("Befehl ausgeführt: neue Datei")
             else:
                 self.editor_window.show_status_message("Neue Datei abgebrochen")
+
+        elif action == "heading_1":
+            self.editor_window.set_heading(1)
+            self.editor_window.show_status_message("Befehl ausgeführt: Überschrift 1")
+
+        elif action == "heading_2":
+            self.editor_window.set_heading(2)
+            self.editor_window.show_status_message("Befehl ausgeführt: Überschrift 2")
+
+        elif action == "normal_text":
+            self.editor_window.set_normal_text()
+            self.editor_window.show_status_message("Befehl ausgeführt: normaler Text")
+
+        elif action == "align_left":
+            self.editor_window.align_left()
+            self.editor_window.show_status_message("Befehl ausgeführt: linksbündig")
+
+        elif action == "align_center":
+            self.editor_window.align_center()
+            self.editor_window.show_status_message("Befehl ausgeführt: zentriert")
+
+        elif action == "align_right":
+            self.editor_window.align_right()
+            self.editor_window.show_status_message("Befehl ausgeführt: rechtsbündig")
 
         else:
             self.show_unknown_command(normalized_command)
