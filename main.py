@@ -46,6 +46,8 @@ class MiniEditor(QMainWindow):
         self._create_actions()
         self._create_menus()
 
+        self.statusBar().showMessage("Bereit")
+
     def _create_actions(self):
         self.new_action = QAction("Neu", self)
         self.new_action.triggered.connect(self.new_file)
@@ -174,6 +176,9 @@ class MiniEditor(QMainWindow):
         command = self.command_input.text()
         self.command_input.clear()
         self.command_router.execute(command)
+
+    def show_status_message(self, message: str, timeout: int = 3000) -> None:
+        self.statusBar().showMessage(message, timeout)
 
 
 def main():

@@ -1,6 +1,3 @@
-from PySide6.QtWidgets import QMessageBox
-
-
 class CommandRouter:
     def __init__(self, editor_window):
         self.editor_window = editor_window
@@ -55,18 +52,23 @@ class CommandRouter:
 
         if action == "bold":
             self.editor_window.toggle_bold()
+            self.editor_window.show_status_message("Befehl ausgeführt: fett")
 
         elif action == "italic":
             self.editor_window.toggle_italic()
+            self.editor_window.show_status_message("Befehl ausgeführt: kursiv")
 
         elif action == "delete_selection":
             self.delete_selection()
+            self.editor_window.show_status_message("Befehl ausgeführt: Auswahl gelöscht")
 
         elif action == "select_all":
             self.editor.selectAll()
+            self.editor_window.show_status_message("Befehl ausgeführt: alles markiert")
 
         elif action == "new_line":
             self.insert_new_line()
+            self.editor_window.show_status_message("Befehl ausgeführt: neue Zeile")
 
         else:
             self.show_unknown_command(normalized_command)
@@ -92,8 +94,6 @@ class CommandRouter:
         cursor.insertText("\n")
 
     def show_unknown_command(self, command: str) -> None:
-        QMessageBox.information(
-            self.editor_window,
-            "Unbekannter Befehl",
-            f"Der Befehl wurde nicht erkannt:\n{command}",
+        self.editor_window.show_status_message(
+            f"Unbekannter Befehl: {command}"
         )
