@@ -167,6 +167,15 @@ class CommandRouter:
         if not normalized_command:
             return
 
+        font_size = self.parse_font_size_command(normalized_command)
+
+        if font_size is not None:
+            self.editor_window.set_font_size(font_size)
+            self.editor_window.show_status_message(
+                f"Befehl ausgeführt: Schriftgröße {font_size}"
+            )
+            return
+
         action = self.get_action(normalized_command)
 
         if action == "bold":
@@ -303,3 +312,23 @@ class CommandRouter:
         self.editor_window.show_status_message(
             f"Unbekannter Befehl: {command}"
         )
+
+
+    def parse_font_size_command(self, command: str) -> int | None:
+        prefixes = {
+            "schriftgröße",
+            "schriftgroesse",
+            "schrift größe",
+            "schrift groesse",
+            "größe",
+            "groesse",
+        }
+
+        for prefix in prefixes:
+            if command.startswith(prefix + " "):
+                value = command.removeprefix(prefix).strip()
+
+                if value.isdigit():
+                    return int(value)
+
+        return None

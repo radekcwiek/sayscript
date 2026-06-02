@@ -357,6 +357,19 @@ class MiniEditor(QMainWindow):
             cursor.setBlockFormat(block_format)
 
 
+    def set_font_size(self, size: int) -> None:
+        if size < 6 or size > 96:
+            self.show_status_message("Schriftgröße muss zwischen 6 und 96 liegen")
+            return
+
+        fmt = QTextCharFormat()
+        fmt.setFontPointSize(size)
+
+        cursor = self.editor.textCursor()
+        cursor.mergeCharFormat(fmt)
+        self.editor.mergeCurrentCharFormat(fmt)
+
+
 def main():
     app = QApplication(sys.argv)
     window = MiniEditor()
