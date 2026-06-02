@@ -7,6 +7,10 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QFileDialog,
     QMessageBox,
+    QWidget,
+    QVBoxLayout,
+    QLineEdit,
+    QLabel,
 )
 
 
@@ -17,8 +21,21 @@ class MiniEditor(QMainWindow):
         self.setWindowTitle("Dictator - Mini Editor")
         self.resize(900, 650)
 
+        central_widget = QWidget()
+        layout = QVBoxLayout(central_widget)
+
         self.editor = QTextEdit()
-        self.setCentralWidget(self.editor)
+        layout.addWidget(self.editor)
+
+        self.command_label = QLabel("Befehl:")
+        layout.addWidget(self.command_label)
+
+        self.command_input = QLineEdit()
+        self.command_input.setPlaceholderText("z. B. fett, kursiv, lösche auswahl ...")
+        self.command_input.returnPressed.connect(self.execute_command)
+        layout.addWidget(self.command_input)
+
+        self.setCentralWidget(central_widget)
 
         self.current_file = None
 
@@ -148,6 +165,37 @@ class MiniEditor(QMainWindow):
 
         cursor.mergeCharFormat(fmt)
         self.editor.mergeCurrentCharFormat(fmt)
+
+    def execute_command(self):
+        command = self.command_input.text().strip().lower()
+        self.command_input.clear()
+
+        if not command:
+            return
+
+        if command == "fett":
+            self.toggle_bold()
+
+        elif command == "kursiv":
+            self.toggle_italic()
+
+        elif command == "lösche auswahl":
+            cursor = self.editor.textCursor()
+            cursor.removeSelectedText()
+
+        elif command == "alles markieren":
+            self.editor.selectAll()
+
+        elif command == "neue zeile":
+            cursor = self.editor.textCursor()
+            cursor.insertText("\n")
+
+        else:
+            QMessageBox.information(
+                self,
+                "Unbekannter Befehl",
+                f"Der Befehl wurde nicht erkannt:\n{command}",
+            )
 
 
 def main():
