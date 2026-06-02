@@ -124,7 +124,42 @@ class CommandRouter:
                 "text rechts",
                 "rechte ausrichtung",
             },
+            "bullet_list": {
+                "liste",
+                "aufzählung",
+                "aufzählungsliste",
+                "punktliste",
+                "liste mit punkten",
+            },
+            "numbered_list": {
+                "nummerierte liste",
+                "nummerierung",
+                "zahlenliste",
+                "liste mit zahlen",
+            },
+            "indent": {
+                "einrücken",
+                "text einrücken",
+                "absatz einrücken",
+                "rücke ein",
+            },
+            "outdent": {
+                "ausrücken",
+                "text ausrücken",
+                "absatz ausrücken",
+                "rücke aus",
+            },
+            "remove_list": {
+                "liste entfernen",
+                "liste löschen",
+                "keine liste",
+                "aufzählung entfernen",
+                "nummerierung entfernen",
+                "listenformat entfernen",
+                "zurück zu text",
+            },
         }
+
 
     def execute(self, command: str) -> None:
         normalized_command = self.normalize_command(command)
@@ -216,11 +251,33 @@ class CommandRouter:
             self.editor_window.align_right()
             self.editor_window.show_status_message("Befehl ausgeführt: rechtsbündig")
 
+        elif action == "bullet_list":
+            self.editor_window.toggle_bullet_list()
+            self.editor_window.show_status_message("Befehl ausgeführt: Liste")
+
+        elif action == "numbered_list":
+            self.editor_window.toggle_numbered_list()
+            self.editor_window.show_status_message("Befehl ausgeführt: nummerierte Liste")
+
+        elif action == "remove_list":
+            self.editor_window.remove_list_format()
+            self.editor_window.show_status_message("Befehl ausgeführt: Liste entfernt")
+
+        elif action == "indent":
+            self.editor_window.indent_text()
+            self.editor_window.show_status_message("Befehl ausgeführt: einrücken")
+
+        elif action == "outdent":
+            self.editor_window.outdent_text()
+            self.editor_window.show_status_message("Befehl ausgeführt: ausrücken")
+
         else:
             self.show_unknown_command(normalized_command)
 
+
     def normalize_command(self, command: str) -> str:
         return " ".join(command.strip().lower().split())
+
 
     def get_action(self, command: str) -> str | None:
         for action, aliases in self.command_aliases.items():
@@ -229,15 +286,18 @@ class CommandRouter:
 
         return None
 
+
     def delete_selection(self) -> None:
         cursor = self.editor.textCursor()
 
         if cursor.hasSelection():
             cursor.removeSelectedText()
 
+
     def insert_new_line(self) -> None:
         cursor = self.editor.textCursor()
         cursor.insertText("\n")
+
 
     def show_unknown_command(self, command: str) -> None:
         self.editor_window.show_status_message(

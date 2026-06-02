@@ -1,7 +1,7 @@
 import sys
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QTextCharFormat, QFont
+from PySide6.QtGui import QAction, QTextCharFormat, QFont, QTextListFormat, QTextBlockFormat
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -50,6 +50,7 @@ class MiniEditor(QMainWindow):
 
         self.statusBar().showMessage("Bereit")
 
+
     def _create_actions(self):
         self.new_action = QAction("Neu", self)
         self.new_action.triggered.connect(self.new_file)
@@ -72,6 +73,7 @@ class MiniEditor(QMainWindow):
         self.italic_action = QAction("Kursiv", self)
         self.italic_action.triggered.connect(self.toggle_italic)
 
+
     def _create_menus(self):
         menu_bar = self.menuBar()
 
@@ -87,6 +89,7 @@ class MiniEditor(QMainWindow):
         format_menu.addAction(self.bold_action)
         format_menu.addAction(self.italic_action)
 
+
     def new_file(self):
         if not self.maybe_save_changes():
             return False
@@ -97,6 +100,7 @@ class MiniEditor(QMainWindow):
         self.update_window_title()
         self.show_status_message("Neue Datei erstellt")
         return True
+
 
     def open_file(self):
         if not self.maybe_save_changes():
@@ -131,11 +135,13 @@ class MiniEditor(QMainWindow):
             QMessageBox.critical(self, "Fehler", f"Datei konnte nicht geöffnet werden:\n{error}")
             return False
 
+
     def save_file(self):
         if self.current_file is None:
             return self.save_file_as()
 
         return self._write_file(self.current_file)
+
 
     def save_file_as(self):
         file_path, _ = QFileDialog.getSaveFileName(
@@ -150,6 +156,7 @@ class MiniEditor(QMainWindow):
 
         self.current_file = file_path
         return self._write_file(file_path)
+
 
     def _write_file(self, file_path):
         try:
@@ -168,6 +175,7 @@ class MiniEditor(QMainWindow):
             QMessageBox.critical(self, "Fehler", f"Datei konnte nicht gespeichert werden:\n{error}")
             return False
 
+
     def toggle_bold(self):
         cursor = self.editor.textCursor()
 
@@ -182,6 +190,7 @@ class MiniEditor(QMainWindow):
         cursor.mergeCharFormat(fmt)
         self.editor.mergeCurrentCharFormat(fmt)
 
+
     def toggle_italic(self):
         cursor = self.editor.textCursor()
 
@@ -191,13 +200,16 @@ class MiniEditor(QMainWindow):
         cursor.mergeCharFormat(fmt)
         self.editor.mergeCurrentCharFormat(fmt)
 
+
     def execute_command(self):
         command = self.command_input.text()
         self.command_input.clear()
         self.command_router.execute(command)
 
+
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
         self.statusBar().showMessage(message, timeout)
+
 
     def update_window_title(self):
         title = "Dictator - Mini Editor"
@@ -232,11 +244,13 @@ class MiniEditor(QMainWindow):
 
         return False
 
+
     def closeEvent(self, event):
         if self.maybe_save_changes():
             event.accept()
         else:
             event.ignore()
+
 
     def set_heading(self, level: int) -> None:
         fmt = QTextCharFormat()
@@ -277,6 +291,70 @@ class MiniEditor(QMainWindow):
 
     def align_right(self) -> None:
         self.editor.setAlignment(Qt.AlignmentFlag.AlignRight)
+
+
+    def toggle_bullet_list(self) -> None:
+        cursor = self.editor.textCursor()
+
+        list_format = QTextListFormat()
+        list_format.setStyle(QTextListFormat.Style.ListDisc)
+
+        cursor.createList(list_format)
+
+
+    def toggle_numbered_list(self) -> None:
+        cursor = self.editor.textCursor()
+
+        list_format = QTextListFormat()
+        list_format.setStyle(QTextListFormat.Style.ListDecimal)
+
+        cursor.createList(list_format)
+
+
+    def remove_list_format(self) -> None:
+        cursor = self.editor.textCursor()
+        document = self.editor.document()
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.beginEditBlock()
+
+        block = document.findBlock(start)
+
+        while block.isValid() and block.position() <= end:
+            block_cursor = self.editor.textCursor()
+            block_cursor.setPosition(block.position())
+
+            text_list = block.textList()
+            if text_list is not None:
+                text_list.remove(block)
+
+            block_format = block.blockFormat()
+            block_format.setIndent(0)
+
+            block_cursor.setBlockFormat(block_format)
+
+            block = block.next()
+
+        cursor.endEditBlock()
+
+
+    def indent_text(self) -> None:
+        cursor = self.editor.textCursor()
+        block_format = cursor.blockFormat()
+        block_format.setIndent(block_format.indent() + 1)
+        cursor.setBlockFormat(block_format)
+
+
+    def outdent_text(self) -> None:
+        cursor = self.editor.textCursor()
+        block_format = cursor.blockFormat()
+        current_indent = block_format.indent()
+
+        if current_indent > 0:
+            block_format.setIndent(current_indent - 1)
+            cursor.setBlockFormat(block_format)
 
 
 def main():
