@@ -13,6 +13,8 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
+from app.command_router import CommandRouter
+
 
 class MiniEditor(QMainWindow):
     def __init__(self):
@@ -26,6 +28,8 @@ class MiniEditor(QMainWindow):
 
         self.editor = QTextEdit()
         layout.addWidget(self.editor)
+
+        self.command_router = CommandRouter(self)
 
         self.command_label = QLabel("Befehl:")
         layout.addWidget(self.command_label)
@@ -167,35 +171,9 @@ class MiniEditor(QMainWindow):
         self.editor.mergeCurrentCharFormat(fmt)
 
     def execute_command(self):
-        command = self.command_input.text().strip().lower()
+        command = self.command_input.text()
         self.command_input.clear()
-
-        if not command:
-            return
-
-        if command == "fett":
-            self.toggle_bold()
-
-        elif command == "kursiv":
-            self.toggle_italic()
-
-        elif command == "lösche auswahl":
-            cursor = self.editor.textCursor()
-            cursor.removeSelectedText()
-
-        elif command == "alles markieren":
-            self.editor.selectAll()
-
-        elif command == "neue zeile":
-            cursor = self.editor.textCursor()
-            cursor.insertText("\n")
-
-        else:
-            QMessageBox.information(
-                self,
-                "Unbekannter Befehl",
-                f"Der Befehl wurde nicht erkannt:\n{command}",
-            )
+        self.command_router.execute(command)
 
 
 def main():
