@@ -40,6 +40,48 @@ class CommandRouter:
                 "neuen absatz",
                 "absatz",
             },
+            "undo": {
+                "rückgängig",
+                "mach rückgängig",
+                "letzte aktion rückgängig",
+                "undo",
+            },
+            "redo": {
+                "wiederholen",
+                "wiederherstellen",
+                "redo",
+            },
+            "cut": {
+                "ausschneiden",
+                "auswahl ausschneiden",
+                "markierung ausschneiden",
+            },
+            "copy": {
+                "kopieren",
+                "auswahl kopieren",
+                "markierung kopieren",
+            },
+            "paste": {
+                "einfügen",
+                "aus zwischenablage einfügen",
+                "text einfügen",
+            },
+            "save": {
+                "speichern",
+                "datei speichern",
+                "dokument speichern",
+            },
+            "open": {
+                "öffnen",
+                "datei öffnen",
+                "dokument öffnen",
+            },
+            "new_file": {
+                "neu",
+                "neue datei",
+                "neues dokument",
+                "dokument neu",
+            },
         }
 
     def execute(self, command: str) -> None:
@@ -69,6 +111,38 @@ class CommandRouter:
         elif action == "new_line":
             self.insert_new_line()
             self.editor_window.show_status_message("Befehl ausgeführt: neue Zeile")
+
+        elif action == "undo":
+            self.editor.undo()
+            self.editor_window.show_status_message("Befehl ausgeführt: rückgängig")
+
+        elif action == "redo":
+            self.editor.redo()
+            self.editor_window.show_status_message("Befehl ausgeführt: wiederholen")
+
+        elif action == "cut":
+            self.editor.cut()
+            self.editor_window.show_status_message("Befehl ausgeführt: ausschneiden")
+
+        elif action == "copy":
+            self.editor.copy()
+            self.editor_window.show_status_message("Befehl ausgeführt: kopieren")
+
+        elif action == "paste":
+            self.editor.paste()
+            self.editor_window.show_status_message("Befehl ausgeführt: einfügen")
+
+        elif action == "save":
+            self.editor_window.save_file()
+            self.editor_window.show_status_message("Befehl ausgeführt: speichern")
+
+        elif action == "open":
+            self.editor_window.open_file()
+            self.editor_window.show_status_message("Befehl ausgeführt: öffnen")
+
+        elif action == "new_file":
+            self.editor_window.new_file()
+            self.editor_window.show_status_message("Befehl ausgeführt: neue Datei")
 
         else:
             self.show_unknown_command(normalized_command)
