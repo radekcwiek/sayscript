@@ -27,6 +27,7 @@ class MiniEditor(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         self.editor = QTextEdit()
+        self.editor.document().modificationChanged.connect(self.update_window_title)
         layout.addWidget(self.editor)
 
         self.command_router = CommandRouter(self)
@@ -86,11 +87,20 @@ class MiniEditor(QMainWindow):
         format_menu.addAction(self.italic_action)
 
     def new_file(self):
+        if not self.maybe_save_changes():
+            return False
+
         self.editor.clear()
         self.current_file = None
-        self.setWindowTitle("Voice Writer - Mini Editor")
+        self.editor.document().setModified(False)
+        self.update_window_title()
+        self.show_status_message("Neue Datei erstellt")
+        return True
 
     def open_file(self):
+        if not self.maybe_save_changes():
+            return False
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             "Datei öffnen",
@@ -99,7 +109,7 @@ class MiniEditor(QMainWindow):
         )
 
         if not file_path:
-            return
+            return False
 
         try:
             with open(file_path, "r", encoding="utf-8") as file:
@@ -111,17 +121,20 @@ class MiniEditor(QMainWindow):
                 self.editor.setPlainText(content)
 
             self.current_file = file_path
-            self.setWindowTitle(f"Voice Writer - {file_path}")
+            self.editor.document().setModified(False)
+            self.update_window_title()
+            self.show_status_message("Datei geöffnet")
+            return True
 
         except OSError as error:
             QMessageBox.critical(self, "Fehler", f"Datei konnte nicht geöffnet werden:\n{error}")
+            return False
 
     def save_file(self):
         if self.current_file is None:
-            self.save_file_as()
-            return
+            return self.save_file_as()
 
-        self._write_file(self.current_file)
+        return self._write_file(self.current_file)
 
     def save_file_as(self):
         file_path, _ = QFileDialog.getSaveFileName(
@@ -132,11 +145,10 @@ class MiniEditor(QMainWindow):
         )
 
         if not file_path:
-            return
+            return False
 
         self.current_file = file_path
-        self._write_file(file_path)
-        self.setWindowTitle(f"Voice Writer - {file_path}")
+        return self._write_file(file_path)
 
     def _write_file(self, file_path):
         try:
@@ -146,8 +158,14 @@ class MiniEditor(QMainWindow):
                 else:
                     file.write(self.editor.toHtml())
 
+            self.editor.document().setModified(False)
+            self.update_window_title()
+            self.show_status_message("Datei gespeichert")
+            return True
+
         except OSError as error:
             QMessageBox.critical(self, "Fehler", f"Datei konnte nicht gespeichert werden:\n{error}")
+            return False
 
     def toggle_bold(self):
         cursor = self.editor.textCursor()
@@ -179,6 +197,45 @@ class MiniEditor(QMainWindow):
 
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
         self.statusBar().showMessage(message, timeout)
+
+    def update_window_title(self):
+        title = "Dictator - Mini Editor"
+
+        if self.current_file:
+            title = f"Dictator - {self.current_file}"
+
+        if self.editor.document().isModified():
+            title += " *"
+
+        self.setWindowTitle(title)
+
+
+    def maybe_save_changes(self) -> bool:
+        if not self.editor.document().isModified():
+            return True
+
+        result = QMessageBox.question(
+            self,
+            "Änderungen speichern?",
+            "Das Dokument wurde geändert. Möchtest du die Änderungen speichern?",
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel,
+        )
+
+        if result == QMessageBox.StandardButton.Save:
+            return self.save_file()
+
+        if result == QMessageBox.StandardButton.Discard:
+            return True
+
+        return False
+
+    def closeEvent(self, event):
+        if self.maybe_save_changes():
+            event.accept()
+        else:
+            event.ignore()
 
 
 def main():

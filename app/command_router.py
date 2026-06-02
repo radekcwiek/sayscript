@@ -133,16 +133,22 @@ class CommandRouter:
             self.editor_window.show_status_message("Befehl ausgeführt: einfügen")
 
         elif action == "save":
-            self.editor_window.save_file()
-            self.editor_window.show_status_message("Befehl ausgeführt: speichern")
+            if self.editor_window.save_file():
+                self.editor_window.show_status_message("Befehl ausgeführt: speichern")
+            else:
+                self.editor_window.show_status_message("Speichern abgebrochen")
 
         elif action == "open":
-            self.editor_window.open_file()
-            self.editor_window.show_status_message("Befehl ausgeführt: öffnen")
+            if self.editor_window.open_file():
+                self.editor_window.show_status_message("Befehl ausgeführt: öffnen")
+            else:
+                self.editor_window.show_status_message("Öffnen abgebrochen")
 
         elif action == "new_file":
-            self.editor_window.new_file()
-            self.editor_window.show_status_message("Befehl ausgeführt: neue Datei")
+            if self.editor_window.new_file():
+                self.editor_window.show_status_message("Befehl ausgeführt: neue Datei")
+            else:
+                self.editor_window.show_status_message("Neue Datei abgebrochen")
 
         else:
             self.show_unknown_command(normalized_command)
