@@ -227,6 +227,11 @@ class CommandRouter:
         if font_family is not None:
             return ParsedCommand("font_family", font_family)
 
+        insert_text = self.parse_insert_text(command)
+
+        if insert_text is not None:
+            return ParsedCommand("insert_text", insert_text)
+
         action = self.get_action(command)
 
         if action is not None:
@@ -353,6 +358,10 @@ class CommandRouter:
                     f"Befehl ausgeführt: Schriftart {value}"
                 )
 
+        elif action == "insert_text":
+            self.editor_window.insert_text(value)
+            self.editor_window.show_status_message("Befehl ausgeführt: Text eingefügt")
+
         else:
             self.show_unknown_command(action)
 
@@ -399,6 +408,28 @@ class CommandRouter:
 
                 if family:
                     return family
+
+        return None
+
+
+    def parse_insert_text(self, command: str) -> str | None:
+        prefixes = {
+            "füge ein",
+            "fuege ein",
+            "einfügen",
+            "einfuegen",
+            "schreibe",
+            "schreib",
+            "text einfügen",
+            "text einfuegen",
+        }
+
+        for prefix in prefixes:
+            if command.startswith(prefix + " "):
+                text = command.removeprefix(prefix).strip()
+
+                if text:
+                    return text
 
         return None
 

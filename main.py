@@ -397,6 +397,11 @@ class MiniEditor(QMainWindow):
         return True
 
 
+    def insert_text(self, text: str) -> None:
+        cursor = self.editor.textCursor()
+        cursor.insertText(text)
+
+
 def main():
     app = QApplication(sys.argv)
     window = MiniEditor()
