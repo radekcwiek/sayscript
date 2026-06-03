@@ -222,6 +222,11 @@ class CommandRouter:
         if font_size is not None:
             return ParsedCommand("font_size", font_size)
 
+        font_family = self.parse_font_family(command)
+
+        if font_family is not None:
+            return ParsedCommand("font_family", font_family)
+
         action = self.get_action(command)
 
         if action is not None:
@@ -342,6 +347,12 @@ class CommandRouter:
                 f"Befehl ausgeführt: Schriftgröße {value}"
             )
 
+        elif action == "font_family":
+            self.editor_window.set_font_family(value)
+            self.editor_window.show_status_message(
+                f"Befehl ausgeführt: Schriftart {value}"
+            )
+
         else:
             self.show_unknown_command(action)
 
@@ -372,3 +383,22 @@ class CommandRouter:
                     return None
 
         return None
+
+
+    def parse_font_family(self, command: str) -> str | None:
+        prefixes = {
+            "schriftart",
+            "schrift",
+            "font",
+            "font family",
+        }
+
+        for prefix in prefixes:
+            if command.startswith(prefix + " "):
+                family = command.removeprefix(prefix).strip()
+
+                if family:
+                    return family
+
+        return None
+

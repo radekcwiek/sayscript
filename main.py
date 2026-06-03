@@ -366,6 +366,15 @@ class MiniEditor(QMainWindow):
         self.editor.mergeCurrentCharFormat(fmt)
 
 
+    def set_font_family(self, family: str) -> None:
+        fmt = QTextCharFormat()
+        fmt.setFontFamilies([family])
+
+        cursor = self.editor.textCursor()
+        cursor.mergeCharFormat(fmt)
+        self.editor.mergeCurrentCharFormat(fmt)
+
+
 def main():
     app = QApplication(sys.argv)
     window = MiniEditor()
