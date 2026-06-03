@@ -1,3 +1,13 @@
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass
+class ParsedCommand:
+    action: str
+    value: Any = None
+
+
 class CommandRouter:
     def __init__(self, editor_window):
         self.editor_window = editor_window
@@ -167,16 +177,62 @@ class CommandRouter:
         if not normalized_command:
             return
 
-        font_size = self.parse_font_size_command(normalized_command)
+        parsed_command = self.parse_command(normalized_command)
 
-        if font_size is not None:
-            self.editor_window.set_font_size(font_size)
-            self.editor_window.show_status_message(
-                f"Befehl ausgeführt: Schriftgröße {font_size}"
-            )
+        if parsed_command is None:
+            self.show_unknown_command(normalized_command)
             return
 
-        action = self.get_action(normalized_command)
+        self.run_command(parsed_command)
+
+
+    def normalize_command(self, command: str) -> str:
+        return " ".join(command.strip().lower().split())
+
+
+    def get_action(self, command: str) -> str | None:
+        for action, aliases in self.command_aliases.items():
+            if command in aliases:
+                return action
+
+        return None
+
+
+    def delete_selection(self) -> None:
+        cursor = self.editor.textCursor()
+
+        if cursor.hasSelection():
+            cursor.removeSelectedText()
+
+
+    def insert_new_line(self) -> None:
+        cursor = self.editor.textCursor()
+        cursor.insertText("\n")
+
+
+    def show_unknown_command(self, command: str) -> None:
+        self.editor_window.show_status_message(
+            f"Unbekannter Befehl: {command}"
+        )
+
+
+    def parse_command(self, command: str) -> ParsedCommand | None:
+        font_size = self.parse_font_size(command)
+
+        if font_size is not None:
+            return ParsedCommand("font_size", font_size)
+
+        action = self.get_action(command)
+
+        if action is not None:
+            return ParsedCommand(action)
+
+        return None
+
+
+    def run_command(self, parsed_command: ParsedCommand) -> None:
+        action = parsed_command.action
+        value = parsed_command.value
 
         if action == "bold":
             self.editor_window.toggle_bold()
@@ -280,41 +336,17 @@ class CommandRouter:
             self.editor_window.outdent_text()
             self.editor_window.show_status_message("Befehl ausgeführt: ausrücken")
 
+        elif action == "font_size":
+            self.editor_window.set_font_size(value)
+            self.editor_window.show_status_message(
+                f"Befehl ausgeführt: Schriftgröße {value}"
+            )
+
         else:
-            self.show_unknown_command(normalized_command)
+            self.show_unknown_command(action)
 
 
-    def normalize_command(self, command: str) -> str:
-        return " ".join(command.strip().lower().split())
-
-
-    def get_action(self, command: str) -> str | None:
-        for action, aliases in self.command_aliases.items():
-            if command in aliases:
-                return action
-
-        return None
-
-
-    def delete_selection(self) -> None:
-        cursor = self.editor.textCursor()
-
-        if cursor.hasSelection():
-            cursor.removeSelectedText()
-
-
-    def insert_new_line(self) -> None:
-        cursor = self.editor.textCursor()
-        cursor.insertText("\n")
-
-
-    def show_unknown_command(self, command: str) -> None:
-        self.editor_window.show_status_message(
-            f"Unbekannter Befehl: {command}"
-        )
-
-
-    def parse_font_size_command(self, command: str) -> int | None:
+    def parse_font_size(self, command: str) -> int | None:
         prefixes = {
             "schriftgröße",
             "schriftgroesse",
@@ -329,6 +361,14 @@ class CommandRouter:
                 value = command.removeprefix(prefix).strip()
 
                 if value.isdigit():
-                    return int(value)
+                    size = int(value)
+
+                    if 6 <= size <= 96:
+                        return size
+
+                    self.editor_window.show_status_message(
+                        "Schriftgröße muss zwischen 6 und 96 liegen"
+                    )
+                    return None
 
         return None
