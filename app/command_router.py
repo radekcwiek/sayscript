@@ -172,12 +172,13 @@ class CommandRouter:
 
 
     def execute(self, command: str) -> None:
-        normalized_command = self.normalize_command(command)
+        original_command = command.strip()
+        normalized_command = self.normalize_command(original_command)
 
         if not normalized_command:
             return
 
-        parsed_command = self.parse_command(normalized_command)
+        parsed_command = self.parse_command(original_command, normalized_command)
 
         if parsed_command is None:
             self.show_unknown_command(normalized_command)
@@ -216,23 +217,27 @@ class CommandRouter:
         )
 
 
-    def parse_command(self, command: str) -> ParsedCommand | None:
-        font_size = self.parse_font_size(command)
+    def parse_command(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> ParsedCommand | None:
+        font_size = self.parse_font_size(normalized_command)
 
         if font_size is not None:
             return ParsedCommand("font_size", font_size)
 
-        font_family = self.parse_font_family(command)
+        font_family = self.parse_font_family(original_command, normalized_command)
 
         if font_family is not None:
             return ParsedCommand("font_family", font_family)
 
-        insert_text = self.parse_insert_text(command)
+        insert_text = self.parse_insert_text(original_command, normalized_command)
 
         if insert_text is not None:
             return ParsedCommand("insert_text", insert_text)
 
-        action = self.get_action(command)
+        action = self.get_action(normalized_command)
 
         if action is not None:
             return ParsedCommand(action)
@@ -394,7 +399,11 @@ class CommandRouter:
         return None
 
 
-    def parse_font_family(self, command: str) -> str | None:
+    def parse_font_family(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> str | None:
         prefixes = {
             "schriftart",
             "schrift",
@@ -402,17 +411,23 @@ class CommandRouter:
             "font family",
         }
 
-        for prefix in prefixes:
-            if command.startswith(prefix + " "):
-                family = command.removeprefix(prefix).strip()
+        family = self.extract_argument_after_prefix(
+            original_command,
+            normalized_command,
+            prefixes,
+        )
 
-                if family:
-                    return family
+        if family:
+            return family
 
         return None
 
 
-    def parse_insert_text(self, command: str) -> str | None:
+    def parse_insert_text(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> str | None:
         prefixes = {
             "füge ein",
             "fuege ein",
@@ -424,12 +439,34 @@ class CommandRouter:
             "text einfuegen",
         }
 
-        for prefix in prefixes:
-            if command.startswith(prefix + " "):
-                text = command.removeprefix(prefix).strip()
+        text = self.extract_argument_after_prefix(
+            original_command,
+            normalized_command,
+            prefixes,
+        )
 
-                if text:
-                    return text
+        if text:
+            return text
+
+        return None
+
+
+    def extract_argument_after_prefix(
+        self,
+        original_command: str,
+        normalized_command: str,
+        prefixes: set[str],
+    ) -> str | None:
+        original_stripped = original_command.strip()
+
+        for prefix in prefixes:
+            normalized_prefix = self.normalize_command(prefix)
+
+            if normalized_command == normalized_prefix:
+                return ""
+
+            if normalized_command.startswith(normalized_prefix + " "):
+                return original_stripped[len(prefix):].strip()
 
         return None
 
