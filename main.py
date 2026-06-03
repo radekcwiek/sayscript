@@ -1,7 +1,14 @@
 import sys
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QTextCharFormat, QFont, QTextListFormat, QTextBlockFormat
+from PySide6.QtGui import (
+    QAction,
+    QTextCharFormat,
+    QFont,
+    QTextListFormat,
+    QTextBlockFormat,
+    QFontDatabase,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -366,13 +373,28 @@ class MiniEditor(QMainWindow):
         self.editor.mergeCurrentCharFormat(fmt)
 
 
-    def set_font_family(self, family: str) -> None:
+    def set_font_family(self, family: str) -> bool:
+        available_families = QFontDatabase.families()
+
+        matching_family = None
+
+        for available_family in available_families:
+            if available_family.lower() == family.lower():
+                matching_family = available_family
+                break
+
+        if matching_family is None:
+            self.show_status_message(f"Schriftart nicht gefunden: {family}")
+            return False
+
         fmt = QTextCharFormat()
-        fmt.setFontFamilies([family])
+        fmt.setFontFamilies([matching_family])
 
         cursor = self.editor.textCursor()
         cursor.mergeCharFormat(fmt)
         self.editor.mergeCurrentCharFormat(fmt)
+
+        return True
 
 
 def main():

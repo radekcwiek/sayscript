@@ -348,10 +348,10 @@ class CommandRouter:
             )
 
         elif action == "font_family":
-            self.editor_window.set_font_family(value)
-            self.editor_window.show_status_message(
-                f"Befehl ausgeführt: Schriftart {value}"
-            )
+            if self.editor_window.set_font_family(value):
+                self.editor_window.show_status_message(
+                    f"Befehl ausgeführt: Schriftart {value}"
+                )
 
         else:
             self.show_unknown_command(action)
