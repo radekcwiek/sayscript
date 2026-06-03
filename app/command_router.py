@@ -237,6 +237,11 @@ class CommandRouter:
         if insert_text is not None:
             return ParsedCommand("insert_text", insert_text)
 
+        replace_text = self.parse_replace_selection(original_command, normalized_command)
+
+        if replace_text is not None:
+            return ParsedCommand("replace_selection", replace_text)
+
         search_text = self.parse_search_text(original_command, normalized_command)
 
         if search_text is not None:
@@ -375,6 +380,9 @@ class CommandRouter:
         elif action == "search_text":
             self.editor_window.find_text(value)
 
+        elif action == "replace_selection":
+            self.editor_window.replace_selection(value)
+
         else:
             self.show_unknown_command(action)
 
@@ -470,6 +478,32 @@ class CommandRouter:
             "find",
             "search",
             "search for",
+        }
+
+        text = self.extract_argument_after_prefix(
+            original_command,
+            normalized_command,
+            prefixes,
+        )
+
+        if text:
+            return text
+
+        return None
+
+
+    def parse_replace_selection(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> str | None:
+        prefixes = {
+            "ersetze auswahl durch",
+            "ersetze markierung durch",
+            "ersetze selektion durch",
+            "ersetze durch",
+            "auswahl ersetzen durch",
+            "markierung ersetzen durch",
         }
 
         text = self.extract_argument_after_prefix(

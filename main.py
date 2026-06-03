@@ -428,6 +428,17 @@ class MiniEditor(QMainWindow):
         self.show_status_message(f"Nicht gefunden: {search_text}")
         return False
 
+    def replace_selection(self, replacement_text: str) -> bool:
+        cursor = self.editor.textCursor()
+
+        if not cursor.hasSelection():
+            self.show_status_message("Keine Auswahl zum Ersetzen vorhanden")
+            return False
+
+        cursor.insertText(replacement_text)
+        self.show_status_message("Auswahl ersetzt")
+        return True
+
 
 def main():
     app = QApplication(sys.argv)
