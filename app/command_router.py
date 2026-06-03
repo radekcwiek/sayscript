@@ -237,6 +237,11 @@ class CommandRouter:
         if insert_text is not None:
             return ParsedCommand("insert_text", insert_text)
 
+        search_text = self.parse_search_text(original_command, normalized_command)
+
+        if search_text is not None:
+            return ParsedCommand("search_text", search_text)
+
         action = self.get_action(normalized_command)
 
         if action is not None:
@@ -367,6 +372,9 @@ class CommandRouter:
             self.editor_window.insert_text(value)
             self.editor_window.show_status_message("Befehl ausgeführt: Text eingefügt")
 
+        elif action == "search_text":
+            self.editor_window.find_text(value)
+
         else:
             self.show_unknown_command(action)
 
@@ -437,6 +445,31 @@ class CommandRouter:
             "schreib",
             "text einfügen",
             "text einfuegen",
+        }
+
+        text = self.extract_argument_after_prefix(
+            original_command,
+            normalized_command,
+            prefixes,
+        )
+
+        if text:
+            return text
+
+        return None
+
+    def parse_search_text(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> str | None:
+        prefixes = {
+            "suche nach",
+            "suche",
+            "finde",
+            "find",
+            "search",
+            "search for",
         }
 
         text = self.extract_argument_after_prefix(

@@ -8,6 +8,7 @@ from PySide6.QtGui import (
     QTextListFormat,
     QTextBlockFormat,
     QFontDatabase,
+    QTextDocument,
 )
 from PySide6.QtWidgets import (
     QApplication,
@@ -400,6 +401,32 @@ class MiniEditor(QMainWindow):
     def insert_text(self, text: str) -> None:
         cursor = self.editor.textCursor()
         cursor.insertText(text)
+
+
+    def find_text(self, search_text: str) -> bool:
+        if not search_text:
+            self.show_status_message("Kein Suchtext angegeben")
+            return False
+
+        found = self.editor.find(search_text)
+
+        if found:
+            self.show_status_message(f"Gefunden: {search_text}")
+            return True
+
+        # Wenn ab Cursorposition nichts gefunden wurde, von vorne suchen
+        cursor = self.editor.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        self.editor.setTextCursor(cursor)
+
+        found = self.editor.find(search_text)
+
+        if found:
+            self.show_status_message(f"Gefunden ab Dokumentanfang: {search_text}")
+            return True
+
+        self.show_status_message(f"Nicht gefunden: {search_text}")
+        return False
 
 
 def main():
