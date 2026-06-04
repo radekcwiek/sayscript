@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
+from app.llm_client import LlmClient
 import re
 
 
@@ -13,6 +14,7 @@ class CommandRouter:
     def __init__(self, editor_window):
         self.editor_window = editor_window
         self.editor = editor_window.editor
+        self.llm_client = LlmClient()
 
         self.command_aliases = {
             "bold": {
@@ -399,8 +401,9 @@ class CommandRouter:
             self.editor_window.replace_next_text(search_text, replacement_text)
 
         elif action == "generate_text":
-            self.editor_window.insert_generated_text_placeholder(value)
-            self.editor_window.show_status_message("Befehl ausgeführt: KI-Textplatzhalter eingefügt")
+            generated_text = self.llm_client.generate_text(value)
+            self.editor_window.insert_generated_text(generated_text)
+            self.editor_window.show_status_message("Befehl ausgeführt: KI-Text generiert")
 
         else:
             self.show_unknown_command(action)
