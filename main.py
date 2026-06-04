@@ -565,6 +565,7 @@ class MiniEditor(QMainWindow):
         insert_position = current_cursor.position()
 
         self.show_status_message("KI generiert Text ...")
+        self.set_command_input_enabled(False)
 
         self.llm_thread = QThread()
         self.llm_worker = LlmWorker(
@@ -597,6 +598,8 @@ class MiniEditor(QMainWindow):
         end_position: int,
         mode: str,
     ) -> None:
+        self.set_command_input_enabled(True)
+
         if mode == "generate":
             self.insert_generated_text_as_paragraph(generated_text, start_position)
             self.show_status_message("KI-Text eingefügt")
@@ -614,6 +617,7 @@ class MiniEditor(QMainWindow):
 
 
     def on_llm_generation_failed(self, error_message: str) -> None:
+        self.set_command_input_enabled(True)
         self.show_status_message(error_message)
 
 
@@ -638,6 +642,7 @@ class MiniEditor(QMainWindow):
         selected_text = cursor.selectedText().replace("\u2029", "\n")
 
         self.show_status_message("KI bearbeitet Auswahl ...")
+        self.set_command_input_enabled(False)
 
         self.llm_thread = QThread()
         self.llm_worker = LlmWorker(
@@ -707,6 +712,7 @@ class MiniEditor(QMainWindow):
         insert_position = current_cursor.position()
 
         self.show_status_message("KI schreibt weiter ...")
+        self.set_command_input_enabled(False)
 
         self.llm_thread = QThread()
         self.llm_worker = LlmWorker(
@@ -730,6 +736,19 @@ class MiniEditor(QMainWindow):
         self.llm_thread.finished.connect(self.clear_llm_worker)
 
         self.llm_thread.start()
+
+
+    def set_command_input_enabled(self, enabled: bool) -> None:
+        self.command_input.setEnabled(enabled)
+
+        if enabled:
+            self.command_input.setPlaceholderText(
+                "z. B. fett, suche nach ..., generiere ..."
+            )
+        else:
+            self.command_input.setPlaceholderText(
+                "KI arbeitet ..."
+            )
 
 
 def main():
