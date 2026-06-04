@@ -467,6 +467,18 @@ class MiniEditor(QMainWindow):
         return True
 
 
+    def insert_generated_text_placeholder(self, prompt: str) -> None:
+        placeholder_text = f"[KI-Generierung: {prompt}]"
+
+        cursor = self.editor.textCursor()
+
+        if not cursor.atBlockStart():
+            cursor.insertText("\n")
+
+        cursor.insertText(placeholder_text)
+        cursor.insertText("\n")
+
+
 def main():
     app = QApplication(sys.argv)
     window = MiniEditor()

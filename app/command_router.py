@@ -253,6 +253,11 @@ class CommandRouter:
         if search_text is not None:
             return ParsedCommand("search_text", search_text)
 
+        generation_prompt = self.parse_generate_text(original_command, normalized_command)
+
+        if generation_prompt is not None:
+            return ParsedCommand("generate_text", generation_prompt)
+
         action = self.get_action(normalized_command)
 
         if action is not None:
@@ -393,6 +398,10 @@ class CommandRouter:
             search_text, replacement_text = value
             self.editor_window.replace_next_text(search_text, replacement_text)
 
+        elif action == "generate_text":
+            self.editor_window.insert_generated_text_placeholder(value)
+            self.editor_window.show_status_message("Befehl ausgeführt: KI-Textplatzhalter eingefügt")
+
         else:
             self.show_unknown_command(action)
 
@@ -459,8 +468,6 @@ class CommandRouter:
             "fuege ein",
             "einfügen",
             "einfuegen",
-            "schreibe",
-            "schreib",
             "text einfügen",
             "text einfuegen",
         }
@@ -579,5 +586,31 @@ class CommandRouter:
 
             if search_text and replacement_text:
                 return search_text, replacement_text
+
+        return None
+
+
+    def parse_generate_text(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> str | None:
+        prefixes = {
+            "generiere",
+            "erzeuge",
+            "schreibe",
+            "schreib",
+            "erstelle",
+            "verfasse",
+        }
+
+        prompt = self.extract_argument_after_prefix(
+            original_command,
+            normalized_command,
+            prefixes,
+        )
+
+        if prompt:
+            return prompt
 
         return None
