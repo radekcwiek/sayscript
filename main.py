@@ -497,6 +497,65 @@ class MiniEditor(QMainWindow):
         cursor.insertText("\n")
 
 
+    def insert_generated_text_as_paragraph(self, text: str, position: int) -> None:
+        cursor = self.editor.textCursor()
+
+        max_position = self.editor.document().characterCount() - 1
+        safe_position = min(position, max_position)
+
+        cursor.setPosition(safe_position)
+        self.editor.setTextCursor(cursor)
+
+        if not cursor.atBlockStart():
+            cursor.insertText("\n")
+
+        cursor.insertText(text)
+
+        if not text.endswith("\n"):
+            cursor.insertText("\n")
+
+
+    def insert_text_at_position(self, text: str, position: int) -> None:
+        cursor = self.editor.textCursor()
+
+        max_position = self.editor.document().characterCount() - 1
+        safe_position = min(position, max_position)
+
+        cursor.setPosition(safe_position)
+
+        text_to_insert = self.prepare_inline_insert_text(text, safe_position)
+
+        cursor.insertText(text_to_insert)
+        self.editor.setTextCursor(cursor)
+
+
+    def prepare_inline_insert_text(self, text: str, position: int) -> str:
+        if not text:
+            return text
+
+        document_text = self.editor.toPlainText()
+
+        if position <= 0:
+            return text
+
+        if position > len(document_text):
+            return text
+
+        previous_char = document_text[position - 1]
+        first_char = text[0]
+
+        if previous_char.isspace():
+            return text
+
+        if first_char.isspace():
+            return text
+
+        if first_char in ".,;:!?)]}":
+            return text
+
+        return " " + text
+
+
     def generate_text_async(self, llm_client, prompt: str) -> None:
         if self.llm_thread is not None and self.llm_thread.isRunning():
             self.show_status_message("Die KI arbeitet bereits")
@@ -536,13 +595,22 @@ class MiniEditor(QMainWindow):
         generated_text: str,
         start_position: int,
         end_position: int,
+        mode: str,
     ) -> None:
-        if start_position == end_position:
-            self.insert_generated_text_at_position(generated_text, start_position)
+        if mode == "generate":
+            self.insert_generated_text_as_paragraph(generated_text, start_position)
             self.show_status_message("KI-Text eingefügt")
-        else:
+
+        elif mode == "continue":
+            self.insert_text_at_position(generated_text, start_position)
+            self.show_status_message("KI-Fortsetzung eingefügt")
+
+        elif mode == "transform":
             self.replace_text_range(generated_text, start_position, end_position)
             self.show_status_message("KI-Auswahl ersetzt")
+
+        else:
+            self.show_status_message(f"Unbekannter KI-Modus: {mode}")
 
 
     def on_llm_generation_failed(self, error_message: str) -> None:
@@ -609,6 +677,59 @@ class MiniEditor(QMainWindow):
         cursor.insertText(replacement_text)
 
         self.editor.setTextCursor(cursor)
+
+
+    def get_text_before_cursor(self, max_characters: int = 2000) -> str:
+        cursor = self.editor.textCursor()
+        position = cursor.position()
+
+        full_text = self.editor.toPlainText()
+        context = full_text[:position]
+
+        if len(context) > max_characters:
+            context = context[-max_characters:]
+
+        return context.strip()
+
+
+    def continue_text_async(self, llm_client) -> None:
+        if self.llm_thread is not None and self.llm_thread.isRunning():
+            self.show_status_message("Die KI arbeitet bereits")
+            return
+
+        context_text = self.get_text_before_cursor()
+
+        if not context_text:
+            self.show_status_message("Kein Kontext vor dem Cursor vorhanden")
+            return
+
+        current_cursor = self.editor.textCursor()
+        insert_position = current_cursor.position()
+
+        self.show_status_message("KI schreibt weiter ...")
+
+        self.llm_thread = QThread()
+        self.llm_worker = LlmWorker(
+            llm_client=llm_client,
+            mode="continue",
+            prompt=context_text,
+            insert_position=insert_position,
+        )
+
+        self.llm_worker.moveToThread(self.llm_thread)
+
+        self.llm_thread.started.connect(self.llm_worker.run)
+        self.llm_worker.finished.connect(self.on_llm_generation_finished)
+        self.llm_worker.failed.connect(self.on_llm_generation_failed)
+
+        self.llm_worker.finished.connect(self.llm_thread.quit)
+        self.llm_worker.failed.connect(self.llm_thread.quit)
+
+        self.llm_thread.finished.connect(self.llm_worker.deleteLater)
+        self.llm_thread.finished.connect(self.llm_thread.deleteLater)
+        self.llm_thread.finished.connect(self.clear_llm_worker)
+
+        self.llm_thread.start()
 
 
 def main():

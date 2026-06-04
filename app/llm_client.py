@@ -162,3 +162,76 @@ class LlmClient:
             f"Anweisung: {instruction}\n\n"
             f"Text:\n{selected_text}"
         )
+
+
+    def continue_text(self, context_text: str) -> str:
+        if self.use_fake_response:
+            return (
+                "[KI-Fortsetzung Platzhalter]\n\n"
+                f"Kontext:\n{context_text}\n\n"
+                "Hier wird später die Fortsetzung von Qwen eingefügt."
+            )
+
+        return self.continue_with_ollama(context_text)
+
+
+    def continue_with_ollama(self, context_text: str) -> str:
+        url = f"{self.base_url}/api/generate"
+
+        payload = {
+            "model": self.model_name,
+            "prompt": self.build_continue_prompt(context_text),
+            "stream": False,
+            "options": {
+                "temperature": 0.7,
+                "num_predict": 350,
+            },
+        }
+
+        try:
+            response = requests.post(
+                url,
+                json=payload,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+
+        except requests.exceptions.ConnectionError:
+            return (
+                "[Fehler]\n\n"
+                "Ollama ist nicht erreichbar. Läuft Ollama auf diesem Rechner?"
+            )
+
+        except requests.exceptions.Timeout:
+            return (
+                "[Fehler]\n\n"
+                "Die KI-Anfrage hat zu lange gedauert."
+            )
+
+        except requests.exceptions.RequestException as error:
+            return (
+                "[Fehler]\n\n"
+                f"Die KI-Anfrage ist fehlgeschlagen:\n{error}"
+            )
+
+        data = response.json()
+        continued_text = data.get("response", "").strip()
+
+        if not continued_text:
+            return (
+                "[Fehler]\n\n"
+                "Das Modell hat keinen Text zurückgegeben."
+            )
+
+        return continued_text
+
+
+    def build_continue_prompt(self, context_text: str) -> str:
+        return (
+            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
+            "Textverarbeitung namens Dictator.\n\n"
+            "Schreibe den folgenden Text sinnvoll weiter. "
+            "Gib nur die Fortsetzung zurück, nicht den bisherigen Text. "
+            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
+            f"Bisheriger Text:\n{context_text}"
+        )

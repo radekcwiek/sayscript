@@ -162,6 +162,15 @@ class CommandRouter:
                 "absatz ausrücken",
                 "rücke aus",
             },
+            "continue_text": {
+                "schreibe weiter",
+                "schreib weiter",
+                "weiter schreiben",
+                "text fortsetzen",
+                "fortsetzen",
+                "führe fort",
+                "fuehre fort",
+            },
             "remove_list": {
                 "liste entfernen",
                 "liste löschen",
@@ -263,15 +272,15 @@ class CommandRouter:
         if transform_instruction is not None:
             return ParsedCommand("transform_selection", transform_instruction)
 
-        generation_prompt = self.parse_generate_text(original_command, normalized_command)
-
-        if generation_prompt is not None:
-            return ParsedCommand("generate_text", generation_prompt)
-
         action = self.get_action(normalized_command)
 
         if action is not None:
             return ParsedCommand(action)
+
+        generation_prompt = self.parse_generate_text(original_command, normalized_command)
+
+        if generation_prompt is not None:
+            return ParsedCommand("generate_text", generation_prompt)
 
         return None
 
@@ -413,6 +422,9 @@ class CommandRouter:
 
         elif action == "generate_text":
             self.editor_window.generate_text_async(self.llm_client, value)
+
+        elif action == "continue_text":
+            self.editor_window.continue_text_async(self.llm_client)
 
         else:
             self.show_unknown_command(action)
@@ -610,10 +622,13 @@ class CommandRouter:
         prefixes = {
             "generiere",
             "erzeuge",
-            "schreibe",
-            "schreib",
             "erstelle",
             "verfasse",
+            "schreibe einen text über",
+            "schreibe einen absatz über",
+            "schreibe eine einleitung zu",
+            "schreib einen text über",
+            "schreib einen absatz über",
         }
 
         prompt = self.extract_argument_after_prefix(

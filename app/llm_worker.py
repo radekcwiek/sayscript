@@ -2,7 +2,7 @@ from PySide6.QtCore import QObject, Signal, Slot
 
 
 class LlmWorker(QObject):
-    finished = Signal(str, int, int)
+    finished = Signal(str, int, int, str)
     failed = Signal(str)
 
     def __init__(
@@ -29,6 +29,10 @@ class LlmWorker(QObject):
                 result_text = self.llm_client.generate_text(self.prompt)
                 end_position = self.insert_position
 
+            elif self.mode == "continue":
+                result_text = self.llm_client.continue_text(self.prompt)
+                end_position = self.insert_position
+
             elif self.mode == "transform":
                 if not self.selected_text:
                     self.failed.emit("Keine Auswahl für KI-Bearbeitung vorhanden.")
@@ -45,7 +49,7 @@ class LlmWorker(QObject):
                 return
 
             if result_text.strip():
-                self.finished.emit(result_text, self.insert_position, end_position)
+                self.finished.emit(result_text, self.insert_position, end_position, self.mode)
             else:
                 self.failed.emit("Die KI hat keinen Text zurückgegeben.")
 
