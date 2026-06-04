@@ -401,9 +401,7 @@ class CommandRouter:
             self.editor_window.replace_next_text(search_text, replacement_text)
 
         elif action == "generate_text":
-            generated_text = self.llm_client.generate_text(value)
-            self.editor_window.insert_generated_text(generated_text)
-            self.editor_window.show_status_message("Befehl ausgeführt: KI-Text generiert")
+            self.editor_window.generate_text_async(self.llm_client, value)
 
         else:
             self.show_unknown_command(action)

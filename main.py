@@ -1,6 +1,6 @@
 import sys
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread
 from PySide6.QtGui import (
     QAction,
     QTextCharFormat,
@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.command_router import CommandRouter
+from app.llm_worker import LlmWorker
 
 
 class MiniEditor(QMainWindow):
@@ -52,6 +53,9 @@ class MiniEditor(QMainWindow):
         self.setCentralWidget(central_widget)
 
         self.current_file = None
+
+        self.llm_thread = None
+        self.llm_worker = None
 
         self._create_actions()
         self._create_menus()
@@ -475,6 +479,65 @@ class MiniEditor(QMainWindow):
 
         cursor.insertText(text)
         cursor.insertText("\n")
+
+
+    def insert_generated_text_at_position(self, text: str, position: int) -> None:
+        cursor = self.editor.textCursor()
+
+        max_position = self.editor.document().characterCount() - 1
+        safe_position = min(position, max_position)
+
+        cursor.setPosition(safe_position)
+        self.editor.setTextCursor(cursor)
+
+        if not cursor.atBlockStart():
+            cursor.insertText("\n")
+
+        cursor.insertText(text)
+        cursor.insertText("\n")
+
+
+    def generate_text_async(self, llm_client, prompt: str) -> None:
+        if self.llm_thread is not None and self.llm_thread.isRunning():
+            self.show_status_message("Die KI arbeitet bereits")
+            return
+
+        current_cursor = self.editor.textCursor()
+        insert_position = current_cursor.position()
+
+        self.show_status_message("KI generiert Text ...")
+
+        self.llm_thread = QThread()
+        self.llm_worker = LlmWorker(llm_client, prompt, insert_position)
+
+        self.llm_worker.moveToThread(self.llm_thread)
+
+        self.llm_thread.started.connect(self.llm_worker.run)
+        self.llm_worker.finished.connect(self.on_llm_generation_finished)
+        self.llm_worker.failed.connect(self.on_llm_generation_failed)
+
+        self.llm_worker.finished.connect(self.llm_thread.quit)
+        self.llm_worker.failed.connect(self.llm_thread.quit)
+
+        self.llm_thread.finished.connect(self.llm_worker.deleteLater)
+        self.llm_thread.finished.connect(self.llm_thread.deleteLater)
+        self.llm_thread.finished.connect(self.clear_llm_worker)
+
+        self.llm_thread.start()
+
+
+    def on_llm_generation_finished(self, generated_text: str, insert_position: int) -> None:
+        self.insert_generated_text_at_position(generated_text, insert_position)
+        self.show_status_message("KI-Text eingefügt")
+
+
+    def on_llm_generation_failed(self, error_message: str) -> None:
+        self.show_status_message(error_message)
+
+
+    def clear_llm_worker(self) -> None:
+        self.llm_thread = None
+        self.llm_worker = None
 
 
 def main():
