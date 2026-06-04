@@ -1,18 +1,23 @@
 import requests
+from app import config
 
 
 class LlmClient:
     def __init__(
         self,
-        model_name: str = "qwen3:8b",
-        base_url: str = "http://localhost:11434",
-        timeout: int = 600,
-        use_fake_response: bool = False,
+        model_name: str | None = None,
+        base_url: str | None = None,
+        timeout: int | None = None,
+        use_fake_response: bool | None = None,
     ):
-        self.model_name = model_name
-        self.base_url = base_url.rstrip("/")
-        self.timeout = timeout
-        self.use_fake_response = use_fake_response
+        self.model_name = model_name or config.OLLAMA_MODEL_NAME
+        self.base_url = (base_url or config.OLLAMA_BASE_URL).rstrip("/")
+        self.timeout = timeout or config.LLM_TIMEOUT_SECONDS
+
+        if use_fake_response is None:
+            self.use_fake_response = config.USE_FAKE_LLM
+        else:
+            self.use_fake_response = use_fake_response
 
     def generate_text(self, prompt: str) -> str:
         if self.use_fake_response:
@@ -36,8 +41,8 @@ class LlmClient:
             "prompt": self.build_generation_prompt(prompt),
             "stream": False,
             "options": {
-                "temperature": 0.7,
-                "num_predict": 600,
+                "temperature": config.GENERATE_TEMPERATURE,
+                "num_predict": config.GENERATE_NUM_PREDICT,
             },
         }
 
@@ -109,8 +114,8 @@ class LlmClient:
             "prompt": self.build_transform_prompt(instruction, selected_text),
             "stream": False,
             "options": {
-                "temperature": 0.4,
-                "num_predict": 500,
+                "temperature": config.TRANSFORM_TEMPERATURE,
+                "num_predict": config.TRANSFORM_NUM_PREDICT,
             },
         }
 
@@ -183,8 +188,8 @@ class LlmClient:
             "prompt": self.build_continue_prompt(context_text),
             "stream": False,
             "options": {
-                "temperature": 0.7,
-                "num_predict": 350,
+                "temperature": config.CONTINUE_TEMPERATURE,
+                "num_predict": config.CONTINUE_NUM_PREDICT,
             },
         }
 
