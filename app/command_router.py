@@ -255,6 +255,14 @@ class CommandRouter:
         if search_text is not None:
             return ParsedCommand("search_text", search_text)
 
+        transform_instruction = self.parse_transform_selection(
+            original_command,
+            normalized_command,
+        )
+
+        if transform_instruction is not None:
+            return ParsedCommand("transform_selection", transform_instruction)
+
         generation_prompt = self.parse_generate_text(original_command, normalized_command)
 
         if generation_prompt is not None:
@@ -399,6 +407,9 @@ class CommandRouter:
         elif action == "replace_text":
             search_text, replacement_text = value
             self.editor_window.replace_next_text(search_text, replacement_text)
+
+        elif action == "transform_selection":
+            self.editor_window.transform_selection_async(self.llm_client, value)
 
         elif action == "generate_text":
             self.editor_window.generate_text_async(self.llm_client, value)
@@ -613,5 +624,50 @@ class CommandRouter:
 
         if prompt:
             return prompt
+
+        return None
+
+
+    def parse_transform_selection(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> str | None:
+        fixed_instructions = {
+            "mach das höflicher": "Formuliere den Text höflicher.",
+            "mache das höflicher": "Formuliere den Text höflicher.",
+            "höflicher": "Formuliere den Text höflicher.",
+            "mach das kürzer": "Kürze den Text deutlich.",
+            "mache das kürzer": "Kürze den Text deutlich.",
+            "kürzer": "Kürze den Text deutlich.",
+            "mach das sachlicher": "Formuliere den Text sachlicher.",
+            "mache das sachlicher": "Formuliere den Text sachlicher.",
+            "sachlicher": "Formuliere den Text sachlicher.",
+            "korrigiere das": "Korrigiere Rechtschreibung und Grammatik.",
+            "korrigieren": "Korrigiere Rechtschreibung und Grammatik.",
+            "fasse das zusammen": "Fasse den Text knapp zusammen.",
+            "zusammenfassen": "Fasse den Text knapp zusammen.",
+        }
+
+        if normalized_command in fixed_instructions:
+            return fixed_instructions[normalized_command]
+
+        prefixes = {
+            "überarbeite auswahl",
+            "ueberarbeite auswahl",
+            "überarbeite markierung",
+            "ueberarbeite markierung",
+            "bearbeite auswahl",
+            "bearbeite markierung",
+        }
+
+        instruction = self.extract_argument_after_prefix(
+            original_command,
+            normalized_command,
+            prefixes,
+        )
+
+        if instruction:
+            return instruction
 
         return None

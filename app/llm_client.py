@@ -27,6 +27,7 @@ class LlmClient:
             "Hier wird später die Antwort von Qwen eingefügt."
         )
 
+
     def generate_with_ollama(self, prompt: str) -> str:
         url = f"{self.base_url}/api/generate"
 
@@ -77,6 +78,7 @@ class LlmClient:
 
         return generated_text
 
+
     def build_generation_prompt(self, user_prompt: str) -> str:
         return (
             "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
@@ -85,4 +87,78 @@ class LlmClient:
             "Gib keine Erklärungen über deine Vorgehensweise. "
             "Gib nur den Text zurück, der in das Dokument eingefügt werden soll.\n\n"
             f"Aufgabe: {user_prompt}"
+        )
+
+
+    def transform_text(self, instruction: str, selected_text: str) -> str:
+        if self.use_fake_response:
+            return (
+                "[KI-Transformation Platzhalter]\n\n"
+                f"Anweisung: {instruction}\n\n"
+                f"Ausgangstext:\n{selected_text}"
+            )
+
+        return self.transform_with_ollama(instruction, selected_text)
+
+
+    def transform_with_ollama(self, instruction: str, selected_text: str) -> str:
+        url = f"{self.base_url}/api/generate"
+
+        payload = {
+            "model": self.model_name,
+            "prompt": self.build_transform_prompt(instruction, selected_text),
+            "stream": False,
+            "options": {
+                "temperature": 0.4,
+                "num_predict": 500,
+            },
+        }
+
+        try:
+            response = requests.post(
+                url,
+                json=payload,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+
+        except requests.exceptions.ConnectionError:
+            return (
+                "[Fehler]\n\n"
+                "Ollama ist nicht erreichbar. Läuft Ollama auf diesem Rechner?"
+            )
+
+        except requests.exceptions.Timeout:
+            return (
+                "[Fehler]\n\n"
+                "Die KI-Anfrage hat zu lange gedauert."
+            )
+
+        except requests.exceptions.RequestException as error:
+            return (
+                "[Fehler]\n\n"
+                f"Die KI-Anfrage ist fehlgeschlagen:\n{error}"
+            )
+
+        data = response.json()
+        transformed_text = data.get("response", "").strip()
+
+        if not transformed_text:
+            return (
+                "[Fehler]\n\n"
+                "Das Modell hat keinen Text zurückgegeben."
+            )
+
+        return transformed_text
+
+
+    def build_transform_prompt(self, instruction: str, selected_text: str) -> str:
+        return (
+            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
+            "Textverarbeitung namens Dictator.\n\n"
+            "Bearbeite den folgenden Text gemäß der Anweisung. "
+            "Gib ausschließlich den überarbeiteten Text zurück. "
+            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
+            f"Anweisung: {instruction}\n\n"
+            f"Text:\n{selected_text}"
         )

@@ -508,7 +508,12 @@ class MiniEditor(QMainWindow):
         self.show_status_message("KI generiert Text ...")
 
         self.llm_thread = QThread()
-        self.llm_worker = LlmWorker(llm_client, prompt, insert_position)
+        self.llm_worker = LlmWorker(
+            llm_client=llm_client,
+            mode="generate",
+            prompt=prompt,
+            insert_position=insert_position,
+        )
 
         self.llm_worker.moveToThread(self.llm_thread)
 
@@ -526,9 +531,18 @@ class MiniEditor(QMainWindow):
         self.llm_thread.start()
 
 
-    def on_llm_generation_finished(self, generated_text: str, insert_position: int) -> None:
-        self.insert_generated_text_at_position(generated_text, insert_position)
-        self.show_status_message("KI-Text eingefügt")
+    def on_llm_generation_finished(
+        self,
+        generated_text: str,
+        start_position: int,
+        end_position: int,
+    ) -> None:
+        if start_position == end_position:
+            self.insert_generated_text_at_position(generated_text, start_position)
+            self.show_status_message("KI-Text eingefügt")
+        else:
+            self.replace_text_range(generated_text, start_position, end_position)
+            self.show_status_message("KI-Auswahl ersetzt")
 
 
     def on_llm_generation_failed(self, error_message: str) -> None:
@@ -538,6 +552,63 @@ class MiniEditor(QMainWindow):
     def clear_llm_worker(self) -> None:
         self.llm_thread = None
         self.llm_worker = None
+
+
+    def transform_selection_async(self, llm_client, instruction: str) -> None:
+        if self.llm_thread is not None and self.llm_thread.isRunning():
+            self.show_status_message("Die KI arbeitet bereits")
+            return
+
+        cursor = self.editor.textCursor()
+
+        if not cursor.hasSelection():
+            self.show_status_message("Bitte zuerst Text markieren")
+            return
+
+        selection_start = cursor.selectionStart()
+        selection_end = cursor.selectionEnd()
+        selected_text = cursor.selectedText().replace("\u2029", "\n")
+
+        self.show_status_message("KI bearbeitet Auswahl ...")
+
+        self.llm_thread = QThread()
+        self.llm_worker = LlmWorker(
+            llm_client=llm_client,
+            mode="transform",
+            prompt=instruction,
+            insert_position=selection_start,
+            selection_end=selection_end,
+            selected_text=selected_text,
+        )
+
+        self.llm_worker.moveToThread(self.llm_thread)
+
+        self.llm_thread.started.connect(self.llm_worker.run)
+        self.llm_worker.finished.connect(self.on_llm_generation_finished)
+        self.llm_worker.failed.connect(self.on_llm_generation_failed)
+
+        self.llm_worker.finished.connect(self.llm_thread.quit)
+        self.llm_worker.failed.connect(self.llm_thread.quit)
+
+        self.llm_thread.finished.connect(self.llm_worker.deleteLater)
+        self.llm_thread.finished.connect(self.llm_thread.deleteLater)
+        self.llm_thread.finished.connect(self.clear_llm_worker)
+
+        self.llm_thread.start()
+
+
+    def replace_text_range(self, replacement_text: str, start_position: int, end_position: int) -> None:
+        cursor = self.editor.textCursor()
+
+        max_position = self.editor.document().characterCount() - 1
+        safe_start = min(start_position, max_position)
+        safe_end = min(end_position, max_position)
+
+        cursor.setPosition(safe_start)
+        cursor.setPosition(safe_end, cursor.MoveMode.KeepAnchor)
+        cursor.insertText(replacement_text)
+
+        self.editor.setTextCursor(cursor)
 
 
 def main():
