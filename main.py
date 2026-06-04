@@ -440,6 +440,33 @@ class MiniEditor(QMainWindow):
         return True
 
 
+    def replace_next_text(self, search_text: str, replacement_text: str) -> bool:
+        if not search_text:
+            self.show_status_message("Kein Suchtext angegeben")
+            return False
+
+        found = self.editor.find(search_text)
+
+        if not found:
+            cursor = self.editor.textCursor()
+            cursor.movePosition(cursor.MoveOperation.Start)
+            self.editor.setTextCursor(cursor)
+
+            found = self.editor.find(search_text)
+
+        if not found:
+            self.show_status_message(f"Nicht gefunden: {search_text}")
+            return False
+
+        cursor = self.editor.textCursor()
+        cursor.insertText(replacement_text)
+
+        self.show_status_message(
+            f"Ersetzt: {search_text} → {replacement_text}"
+        )
+        return True
+
+
 def main():
     app = QApplication(sys.argv)
     window = MiniEditor()

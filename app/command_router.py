@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
+import re
 
 
 @dataclass
@@ -237,10 +238,15 @@ class CommandRouter:
         if insert_text is not None:
             return ParsedCommand("insert_text", insert_text)
 
-        replace_text = self.parse_replace_selection(original_command, normalized_command)
+        replacement_for_selection = self.parse_replace_selection(original_command, normalized_command)
 
-        if replace_text is not None:
-            return ParsedCommand("replace_selection", replace_text)
+        if replacement_for_selection is not None:
+            return ParsedCommand("replace_selection", replacement_for_selection)
+
+        search_replacement = self.parse_replace_text(original_command, normalized_command)
+
+        if search_replacement is not None:
+            return ParsedCommand("replace_text", search_replacement)
 
         search_text = self.parse_search_text(original_command, normalized_command)
 
@@ -382,6 +388,10 @@ class CommandRouter:
 
         elif action == "replace_selection":
             self.editor_window.replace_selection(value)
+
+        elif action == "replace_text":
+            search_text, replacement_text = value
+            self.editor_window.replace_next_text(search_text, replacement_text)
 
         else:
             self.show_unknown_command(action)
@@ -537,3 +547,37 @@ class CommandRouter:
 
         return None
 
+
+    def parse_replace_text(
+        self,
+        original_command: str,
+        normalized_command: str,
+    ) -> tuple[str, str] | None:
+        prefixes = {
+            "ersetze",
+            "ersetze nächstes",
+            "ersetze naechstes",
+        }
+
+        for prefix in prefixes:
+            argument = self.extract_argument_after_prefix(
+                original_command,
+                normalized_command,
+                {prefix},
+            )
+
+            if argument is None:
+                continue
+
+            parts = re.split(r"\s+durch\s+", argument, maxsplit=1, flags=re.IGNORECASE)
+
+            if len(parts) != 2:
+                return None
+
+            search_text = parts[0].strip()
+            replacement_text = parts[1].strip()
+
+            if search_text and replacement_text:
+                return search_text, replacement_text
+
+        return None
