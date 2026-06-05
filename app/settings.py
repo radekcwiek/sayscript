@@ -1,3 +1,4 @@
+import os
 import json
 from pathlib import Path
 
@@ -5,7 +6,15 @@ from app import config
 
 
 def get_app_dir() -> Path:
-    return Path.cwd()
+    user_profile = os.getenv("USERPROFILE")
+
+    if user_profile:
+        app_dir = Path(user_profile) / "AppData" / "Local" / "Dictator"
+    else:
+        app_dir = Path.home() / "AppData" / "Local" / "Dictator"
+
+    app_dir.mkdir(parents=True, exist_ok=True)
+    return app_dir
 
 
 def get_settings_path() -> Path:

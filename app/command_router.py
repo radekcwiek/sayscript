@@ -180,6 +180,14 @@ class CommandRouter:
                 "listenformat entfernen",
                 "zurück zu text",
             },
+            "ai_status": {
+                "ki status",
+                "ki-status",
+                "ai status",
+                "modell status",
+                "ollama status",
+                "zeige ki status",
+            },
         }
 
 
@@ -425,6 +433,9 @@ class CommandRouter:
 
         elif action == "continue_text":
             self.editor_window.continue_text_async(self.llm_client)
+
+        elif action == "ai_status":
+            self.editor_window.show_ai_status()
 
         else:
             self.show_unknown_command(action)

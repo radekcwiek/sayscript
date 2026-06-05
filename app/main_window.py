@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 
 from app.command_router import CommandRouter
 from app.llm_worker import LlmWorker
+from app.settings import get_settings_path, load_settings
 
 
 class MiniEditor(QMainWindow):
@@ -737,3 +738,31 @@ class MiniEditor(QMainWindow):
             self.command_input.setPlaceholderText(
                 "KI arbeitet ..."
             )
+
+
+    def show_ai_status(self) -> None:
+        settings = load_settings()
+        settings_path = get_settings_path()
+
+        message = (
+            f"Modell: {settings['ollama_model_name']}\n"
+            f"Ollama-Adresse: {settings['ollama_base_url']}\n"
+            f"Settings-Datei:\n{settings_path}\n\n"
+            f"Fake-Modus: {settings['use_fake_llm']}\n"
+            f"Timeout: {settings['llm_timeout_seconds']} Sekunden\n\n"
+            f"Generierung:\n"
+            f"  Temperature: {settings['generate_temperature']}\n"
+            f"  Num predict: {settings['generate_num_predict']}\n\n"
+            f"Transformation:\n"
+            f"  Temperature: {settings['transform_temperature']}\n"
+            f"  Num predict: {settings['transform_num_predict']}\n\n"
+            f"Fortsetzung:\n"
+            f"  Temperature: {settings['continue_temperature']}\n"
+            f"  Num predict: {settings['continue_num_predict']}"
+        )
+
+        QMessageBox.information(
+            self,
+            "KI-Status",
+            message,
+        )
