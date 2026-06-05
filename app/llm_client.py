@@ -34,15 +34,100 @@ class LlmClient:
 
 
     def generate_with_ollama(self, prompt: str) -> str:
+        return self.request_ollama(
+            prompt=self.build_generation_prompt(prompt),
+            temperature=config.GENERATE_TEMPERATURE,
+            num_predict=config.GENERATE_NUM_PREDICT,
+        )
+
+
+    def build_generation_prompt(self, user_prompt: str) -> str:
+        return (
+            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
+            "Textverarbeitung namens Dictator.\n\n"
+            "Schreibe den gewünschten Text direkt aus. "
+            "Gib keine Erklärungen über deine Vorgehensweise. "
+            "Gib nur den Text zurück, der in das Dokument eingefügt werden soll.\n\n"
+            f"Aufgabe: {user_prompt}"
+        )
+
+
+    def transform_text(self, instruction: str, selected_text: str) -> str:
+        if self.use_fake_response:
+            return (
+                "[KI-Transformation Platzhalter]\n\n"
+                f"Anweisung: {instruction}\n\n"
+                f"Ausgangstext:\n{selected_text}"
+            )
+
+        return self.transform_with_ollama(instruction, selected_text)
+
+
+    def transform_with_ollama(self, instruction: str, selected_text: str) -> str:
+        return self.request_ollama(
+            prompt=self.build_transform_prompt(instruction, selected_text),
+            temperature=config.TRANSFORM_TEMPERATURE,
+            num_predict=config.TRANSFORM_NUM_PREDICT,
+        )
+
+
+    def build_transform_prompt(self, instruction: str, selected_text: str) -> str:
+        return (
+            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
+            "Textverarbeitung namens Dictator.\n\n"
+            "Bearbeite den folgenden Text gemäß der Anweisung. "
+            "Gib ausschließlich den überarbeiteten Text zurück. "
+            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
+            f"Anweisung: {instruction}\n\n"
+            f"Text:\n{selected_text}"
+        )
+
+
+    def continue_text(self, context_text: str) -> str:
+        if self.use_fake_response:
+            return (
+                "[KI-Fortsetzung Platzhalter]\n\n"
+                f"Kontext:\n{context_text}\n\n"
+                "Hier wird später die Fortsetzung von Qwen eingefügt."
+            )
+
+        return self.continue_with_ollama(context_text)
+
+
+    def continue_with_ollama(self, context_text: str) -> str:
+        return self.request_ollama(
+            prompt=self.build_continue_prompt(context_text),
+            temperature=config.CONTINUE_TEMPERATURE,
+            num_predict=config.CONTINUE_NUM_PREDICT,
+        )
+
+
+    def build_continue_prompt(self, context_text: str) -> str:
+        return (
+            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
+            "Textverarbeitung namens Dictator.\n\n"
+            "Schreibe den folgenden Text sinnvoll weiter. "
+            "Gib nur die Fortsetzung zurück, nicht den bisherigen Text. "
+            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
+            f"Bisheriger Text:\n{context_text}"
+        )
+
+
+    def request_ollama(
+        self,
+        prompt: str,
+        temperature: float,
+        num_predict: int,
+    ) -> str:
         url = f"{self.base_url}/api/generate"
 
         payload = {
             "model": self.model_name,
-            "prompt": self.build_generation_prompt(prompt),
+            "prompt": prompt,
             "stream": False,
             "options": {
-                "temperature": config.GENERATE_TEMPERATURE,
-                "num_predict": config.GENERATE_NUM_PREDICT,
+                "temperature": temperature,
+                "num_predict": num_predict,
             },
         }
 
@@ -82,161 +167,3 @@ class LlmClient:
             )
 
         return generated_text
-
-
-    def build_generation_prompt(self, user_prompt: str) -> str:
-        return (
-            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-            "Textverarbeitung namens Dictator.\n\n"
-            "Schreibe den gewünschten Text direkt aus. "
-            "Gib keine Erklärungen über deine Vorgehensweise. "
-            "Gib nur den Text zurück, der in das Dokument eingefügt werden soll.\n\n"
-            f"Aufgabe: {user_prompt}"
-        )
-
-
-    def transform_text(self, instruction: str, selected_text: str) -> str:
-        if self.use_fake_response:
-            return (
-                "[KI-Transformation Platzhalter]\n\n"
-                f"Anweisung: {instruction}\n\n"
-                f"Ausgangstext:\n{selected_text}"
-            )
-
-        return self.transform_with_ollama(instruction, selected_text)
-
-
-    def transform_with_ollama(self, instruction: str, selected_text: str) -> str:
-        url = f"{self.base_url}/api/generate"
-
-        payload = {
-            "model": self.model_name,
-            "prompt": self.build_transform_prompt(instruction, selected_text),
-            "stream": False,
-            "options": {
-                "temperature": config.TRANSFORM_TEMPERATURE,
-                "num_predict": config.TRANSFORM_NUM_PREDICT,
-            },
-        }
-
-        try:
-            response = requests.post(
-                url,
-                json=payload,
-                timeout=self.timeout,
-            )
-            response.raise_for_status()
-
-        except requests.exceptions.ConnectionError:
-            return (
-                "[Fehler]\n\n"
-                "Ollama ist nicht erreichbar. Läuft Ollama auf diesem Rechner?"
-            )
-
-        except requests.exceptions.Timeout:
-            return (
-                "[Fehler]\n\n"
-                "Die KI-Anfrage hat zu lange gedauert."
-            )
-
-        except requests.exceptions.RequestException as error:
-            return (
-                "[Fehler]\n\n"
-                f"Die KI-Anfrage ist fehlgeschlagen:\n{error}"
-            )
-
-        data = response.json()
-        transformed_text = data.get("response", "").strip()
-
-        if not transformed_text:
-            return (
-                "[Fehler]\n\n"
-                "Das Modell hat keinen Text zurückgegeben."
-            )
-
-        return transformed_text
-
-
-    def build_transform_prompt(self, instruction: str, selected_text: str) -> str:
-        return (
-            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-            "Textverarbeitung namens Dictator.\n\n"
-            "Bearbeite den folgenden Text gemäß der Anweisung. "
-            "Gib ausschließlich den überarbeiteten Text zurück. "
-            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
-            f"Anweisung: {instruction}\n\n"
-            f"Text:\n{selected_text}"
-        )
-
-
-    def continue_text(self, context_text: str) -> str:
-        if self.use_fake_response:
-            return (
-                "[KI-Fortsetzung Platzhalter]\n\n"
-                f"Kontext:\n{context_text}\n\n"
-                "Hier wird später die Fortsetzung von Qwen eingefügt."
-            )
-
-        return self.continue_with_ollama(context_text)
-
-
-    def continue_with_ollama(self, context_text: str) -> str:
-        url = f"{self.base_url}/api/generate"
-
-        payload = {
-            "model": self.model_name,
-            "prompt": self.build_continue_prompt(context_text),
-            "stream": False,
-            "options": {
-                "temperature": config.CONTINUE_TEMPERATURE,
-                "num_predict": config.CONTINUE_NUM_PREDICT,
-            },
-        }
-
-        try:
-            response = requests.post(
-                url,
-                json=payload,
-                timeout=self.timeout,
-            )
-            response.raise_for_status()
-
-        except requests.exceptions.ConnectionError:
-            return (
-                "[Fehler]\n\n"
-                "Ollama ist nicht erreichbar. Läuft Ollama auf diesem Rechner?"
-            )
-
-        except requests.exceptions.Timeout:
-            return (
-                "[Fehler]\n\n"
-                "Die KI-Anfrage hat zu lange gedauert."
-            )
-
-        except requests.exceptions.RequestException as error:
-            return (
-                "[Fehler]\n\n"
-                f"Die KI-Anfrage ist fehlgeschlagen:\n{error}"
-            )
-
-        data = response.json()
-        continued_text = data.get("response", "").strip()
-
-        if not continued_text:
-            return (
-                "[Fehler]\n\n"
-                "Das Modell hat keinen Text zurückgegeben."
-            )
-
-        return continued_text
-
-
-    def build_continue_prompt(self, context_text: str) -> str:
-        return (
-            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-            "Textverarbeitung namens Dictator.\n\n"
-            "Schreibe den folgenden Text sinnvoll weiter. "
-            "Gib nur die Fortsetzung zurück, nicht den bisherigen Text. "
-            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
-            f"Bisheriger Text:\n{context_text}"
-        )
