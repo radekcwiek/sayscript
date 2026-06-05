@@ -8,7 +8,6 @@ from PySide6.QtGui import (
     QTextListFormat,
     QTextBlockFormat,
     QFontDatabase,
-    QTextDocument,
 )
 from PySide6.QtWidgets import (
     QApplication,
@@ -601,7 +600,16 @@ class MiniEditor(QMainWindow):
 
     def on_llm_generation_failed(self, error_message: str) -> None:
         self.set_command_input_enabled(True)
-        self.show_status_message(error_message)
+
+        clean_message = error_message.replace("[Fehler]", "").strip()
+
+        self.show_status_message("KI-Fehler")
+
+        QMessageBox.warning(
+            self,
+            "KI-Fehler",
+            clean_message,
+        )
 
 
     def clear_llm_worker(self) -> None:

@@ -22,6 +22,11 @@ class LlmWorker(QObject):
         self.selection_end = selection_end
         self.selected_text = selected_text
 
+
+    def is_error_text(self, text: str) -> bool:
+        return text.strip().startswith("[Fehler]")
+
+
     @Slot()
     def run(self) -> None:
         try:
@@ -48,10 +53,20 @@ class LlmWorker(QObject):
                 self.failed.emit(f"Unbekannter KI-Modus: {self.mode}")
                 return
 
-            if result_text.strip():
-                self.finished.emit(result_text, self.insert_position, end_position, self.mode)
-            else:
+            if not result_text.strip():
                 self.failed.emit("Die KI hat keinen Text zurückgegeben.")
+                return
+
+            if self.is_error_text(result_text):
+                self.failed.emit(result_text)
+                return
+
+            self.finished.emit(
+                result_text,
+                self.insert_position,
+                end_position,
+                self.mode,
+            )
 
         except Exception as error:
             self.failed.emit(f"KI-Fehler: {error}")
