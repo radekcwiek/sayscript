@@ -21,6 +21,8 @@ from PySide6.QtWidgets import (
 from app.command_router import CommandRouter
 from app.llm_worker import LlmWorker
 from app.settings import get_settings_path, load_settings
+from app.llm_client import LlmClient
+from app.settings_dialog import SettingsDialog
 
 
 class MiniEditor(QMainWindow):
@@ -82,6 +84,9 @@ class MiniEditor(QMainWindow):
         self.italic_action = QAction("Kursiv", self)
         self.italic_action.triggered.connect(self.toggle_italic)
 
+        self.settings_action = QAction("Einstellungen", self)
+        self.settings_action.triggered.connect(self.open_settings_dialog)
+
 
     def _create_menus(self):
         menu_bar = self.menuBar()
@@ -91,6 +96,8 @@ class MiniEditor(QMainWindow):
         file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.save_as_action)
+        file_menu.addSeparator()
+        file_menu.addAction(self.settings_action)
         file_menu.addSeparator()
         file_menu.addAction(self.exit_action)
 
@@ -794,3 +801,11 @@ class MiniEditor(QMainWindow):
                 "Ollama-Test",
                 message,
             )
+
+
+    def open_settings_dialog(self) -> None:
+        dialog = SettingsDialog(self)
+
+        if dialog.exec() == dialog.DialogCode.Accepted:
+            self.command_router.llm_client = LlmClient()
+            self.show_status_message("Einstellungen gespeichert")

@@ -196,6 +196,14 @@ class CommandRouter:
                 "teste ollama",
                 "teste ki",
             },
+            "open_settings_dialog": {
+                "einstellungen",
+                "einstellungen öffnen",
+                "settings",
+                "settings öffnen",
+                "konfiguration",
+                "konfiguration öffnen",
+            },
         }
 
 
@@ -447,6 +455,9 @@ class CommandRouter:
 
         elif action == "ollama_test":
             self.editor_window.show_ollama_test()
+
+        elif action == "open_settings_dialog":
+            self.editor_window.open_settings_dialog()
 
         else:
             self.show_unknown_command(action)
