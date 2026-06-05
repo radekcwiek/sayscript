@@ -188,6 +188,14 @@ class CommandRouter:
                 "ollama status",
                 "zeige ki status",
             },
+            "ollama_test": {
+                "ollama test",
+                "ki test",
+                "ai test",
+                "modell test",
+                "teste ollama",
+                "teste ki",
+            },
         }
 
 
@@ -436,6 +444,9 @@ class CommandRouter:
 
         elif action == "ai_status":
             self.editor_window.show_ai_status()
+
+        elif action == "ollama_test":
+            self.editor_window.show_ollama_test()
 
         else:
             self.show_unknown_command(action)

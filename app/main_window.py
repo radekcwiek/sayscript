@@ -766,3 +766,31 @@ class MiniEditor(QMainWindow):
             "KI-Status",
             message,
         )
+
+
+    def show_ollama_test(self) -> None:
+        status = self.command_router.llm_client.check_ollama_status()
+
+        models_text = "\n".join(status["models"])
+
+        if not models_text:
+            models_text = "(keine Modelle gefunden)"
+
+        message = (
+            f"{status['message']}\n\n"
+            f"Gefundene Modelle:\n"
+            f"{models_text}"
+        )
+
+        if status["ok"]:
+            QMessageBox.information(
+                self,
+                "Ollama-Test",
+                message,
+            )
+        else:
+            QMessageBox.warning(
+                self,
+                "Ollama-Test",
+                message,
+            )

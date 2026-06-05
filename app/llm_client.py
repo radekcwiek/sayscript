@@ -181,3 +181,59 @@ class LlmClient:
             )
 
         return generated_text
+
+
+    def check_ollama_status(self) -> dict:
+        url = f"{self.base_url}/api/tags"
+
+        try:
+            response = requests.get(
+                url,
+                timeout=10,
+            )
+            response.raise_for_status()
+
+        except requests.exceptions.ConnectionError:
+            return {
+                "ok": False,
+                "message": "Ollama ist nicht erreichbar.",
+                "models": [],
+            }
+
+        except requests.exceptions.Timeout:
+            return {
+                "ok": False,
+                "message": "Die Ollama-Anfrage hat zu lange gedauert.",
+                "models": [],
+            }
+
+        except requests.exceptions.RequestException as error:
+            return {
+                "ok": False,
+                "message": f"Ollama-Statusabfrage fehlgeschlagen: {error}",
+                "models": [],
+            }
+
+        data = response.json()
+        models = data.get("models", [])
+
+        model_names = [
+            model.get("name", "")
+            for model in models
+            if model.get("name")
+        ]
+
+        model_available = self.model_name in model_names
+
+        if model_available:
+            message = f"Ollama ist erreichbar. Modell gefunden: {self.model_name}"
+        else:
+            message = (
+                f"Ollama ist erreichbar, aber Modell nicht gefunden: {self.model_name}"
+            )
+
+        return {
+            "ok": model_available,
+            "message": message,
+            "models": model_names,
+        }
