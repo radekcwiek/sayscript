@@ -258,6 +258,15 @@ class MiniEditor(QMainWindow):
 
 
     def closeEvent(self, event):
+        if self.llm_thread is not None and self.llm_thread.isRunning():
+            QMessageBox.information(
+                self,
+                "KI arbeitet noch",
+                "Bitte warte, bis die KI-Aktion abgeschlossen ist.",
+            )
+            event.ignore()
+            return
+
         if self.maybe_save_changes():
             event.accept()
         else:
@@ -469,32 +478,6 @@ class MiniEditor(QMainWindow):
             f"Ersetzt: {search_text} → {replacement_text}"
         )
         return True
-
-
-    def insert_generated_text(self, text: str) -> None:
-        cursor = self.editor.textCursor()
-
-        if not cursor.atBlockStart():
-            cursor.insertText("\n")
-
-        cursor.insertText(text)
-        cursor.insertText("\n")
-
-
-    def insert_generated_text_at_position(self, text: str, position: int) -> None:
-        cursor = self.editor.textCursor()
-
-        max_position = self.editor.document().characterCount() - 1
-        safe_position = min(position, max_position)
-
-        cursor.setPosition(safe_position)
-        self.editor.setTextCursor(cursor)
-
-        if not cursor.atBlockStart():
-            cursor.insertText("\n")
-
-        cursor.insertText(text)
-        cursor.insertText("\n")
 
 
     def insert_generated_text_as_paragraph(self, text: str, position: int) -> None:

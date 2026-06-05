@@ -563,11 +563,17 @@ class CommandRouter:
         self,
         original_command: str,
         normalized_command: str,
-        prefixes: set[str],
+        prefixes,
     ) -> str | None:
         original_stripped = original_command.strip()
 
-        for prefix in prefixes:
+        sorted_prefixes = sorted(
+            prefixes,
+            key=lambda prefix: len(self.normalize_command(prefix)),
+            reverse=True,
+        )
+
+        for prefix in sorted_prefixes:
             normalized_prefix = self.normalize_command(prefix)
 
             if normalized_command == normalized_prefix:
