@@ -1,5 +1,6 @@
 import requests
 from app import config
+from app.settings import load_settings
 
 
 class LlmClient:
@@ -10,12 +11,25 @@ class LlmClient:
         timeout: int | None = None,
         use_fake_response: bool | None = None,
     ):
-        self.model_name = model_name or config.OLLAMA_MODEL_NAME
-        self.base_url = (base_url or config.OLLAMA_BASE_URL).rstrip("/")
-        self.timeout = timeout or config.LLM_TIMEOUT_SECONDS
+        self.settings = load_settings()
+
+        self.model_name = (
+            model_name
+            or self.settings["ollama_model_name"]
+        )
+
+        self.base_url = (
+            base_url
+            or self.settings["ollama_base_url"]
+        ).rstrip("/")
+
+        self.timeout = (
+            timeout
+            or self.settings["llm_timeout_seconds"]
+        )
 
         if use_fake_response is None:
-            self.use_fake_response = config.USE_FAKE_LLM
+            self.use_fake_response = self.settings["use_fake_llm"]
         else:
             self.use_fake_response = use_fake_response
 
@@ -36,8 +50,8 @@ class LlmClient:
     def generate_with_ollama(self, prompt: str) -> str:
         return self.request_ollama(
             prompt=self.build_generation_prompt(prompt),
-            temperature=config.GENERATE_TEMPERATURE,
-            num_predict=config.GENERATE_NUM_PREDICT,
+            temperature=self.settings["generate_temperature"],
+            num_predict=self.settings["generate_num_predict"],
         )
 
 
@@ -66,8 +80,8 @@ class LlmClient:
     def transform_with_ollama(self, instruction: str, selected_text: str) -> str:
         return self.request_ollama(
             prompt=self.build_transform_prompt(instruction, selected_text),
-            temperature=config.TRANSFORM_TEMPERATURE,
-            num_predict=config.TRANSFORM_NUM_PREDICT,
+            temperature=self.settings["transform_temperature"],
+            num_predict=self.settings["transform_num_predict"],
         )
 
 
@@ -97,8 +111,8 @@ class LlmClient:
     def continue_with_ollama(self, context_text: str) -> str:
         return self.request_ollama(
             prompt=self.build_continue_prompt(context_text),
-            temperature=config.CONTINUE_TEMPERATURE,
-            num_predict=config.CONTINUE_NUM_PREDICT,
+            temperature=self.settings["continue_temperature"],
+            num_predict=self.settings["continue_num_predict"],
         )
 
 

@@ -1,0 +1,12 @@
+{
+    "ollama_base_url": "http://localhost:11434",
+    "ollama_model_name": "qwen3:8b",
+    "use_fake_llm": false,
+    "llm_timeout_seconds": 240,
+    "generate_temperature": 0.7,
+    "generate_num_predict": 600,
+    "transform_temperature": 0.4,
+    "transform_num_predict": 500,
+    "continue_temperature": 0.7,
+    "continue_num_predict": 500
+}
