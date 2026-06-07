@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, QThread
+from PySide6.QtCore import Qt, QThread, QTimer
 from PySide6.QtGui import (
     QAction,
     QTextCharFormat,
@@ -39,12 +39,40 @@ class MiniEditor(QMainWindow):
         self.setWindowTitle("Dictator - Mini Editor")
         self.resize(900, 650)
 
+        self.setStyleSheet("""
+            QWidget#editorArea {
+                background-color: #d8d8d8;
+            }
+
+            QTextEdit#paperEditor {
+                background-color: white;
+                color: black;
+                border: 1px solid #b8b8b8;
+                padding: 48px;
+                font-size: 12pt;
+            }
+        """)
+
         central_widget = QWidget()
         layout = QVBoxLayout(central_widget)
 
+        editor_area = QWidget()
+        editor_area.setObjectName("editorArea")
+
+        editor_area_layout = QHBoxLayout(editor_area)
+        editor_area_layout.setContentsMargins(24, 24, 24, 24)
+
         self.editor = QTextEdit()
+        self.editor.setObjectName("paperEditor")
+        self.editor.setFixedWidth(794)
+        self.editor.setMinimumHeight(900)
         self.editor.document().modificationChanged.connect(self.update_window_title)
-        layout.addWidget(self.editor)
+
+        editor_area_layout.addStretch()
+        editor_area_layout.addWidget(self.editor)
+        editor_area_layout.addStretch()
+
+        layout.addWidget(editor_area)
 
         self.command_router = CommandRouter(self)
 
@@ -80,6 +108,8 @@ class MiniEditor(QMainWindow):
         self.command_input.returnPressed.connect(self.execute_command)
         layout.addWidget(self.command_input)
 
+        self.apply_ui_settings()
+
         self.setCentralWidget(central_widget)
 
         self.current_file = None
@@ -107,7 +137,21 @@ class MiniEditor(QMainWindow):
         self._create_actions()
         self._create_menus()
 
-        self.statusBar().showMessage("Bereit")
+        self.statusBar().setStyleSheet("""
+            QStatusBar {
+                padding-left: 24px;
+            }
+        """)
+
+        self.status_label = QLabel("Bereit")
+        self.status_label.setContentsMargins(
+            layout.contentsMargins().left(),
+            0,
+            0,
+            0
+        )
+
+        self.statusBar().addWidget(self.status_label, 1)
 
 
     def _create_actions(self):
@@ -550,7 +594,13 @@ class MiniEditor(QMainWindow):
 
 
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
-        self.statusBar().showMessage(message, timeout)
+        self.status_label.setText(message)
+
+        if timeout > 0:
+            QTimer.singleShot(
+                timeout,
+                lambda: self.status_label.setText("Bereit")
+            )
 
 
     def update_window_title(self):
@@ -1156,4 +1206,13 @@ class MiniEditor(QMainWindow):
         if dialog.exec() == dialog.DialogCode.Accepted:
             self.command_router.llm_client = LlmClient()
             self.reload_speech_settings()
+            self.apply_ui_settings()
             self.show_status_message("Einstellungen gespeichert")
+
+
+    def apply_ui_settings(self) -> None:
+        settings = load_settings()
+        show_command_input = bool(settings["show_command_input"])
+
+        self.command_label.setVisible(show_command_input)
+        self.command_input.setVisible(show_command_input)

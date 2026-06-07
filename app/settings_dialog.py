@@ -48,6 +48,14 @@ class SettingsDialog(QDialog):
             bool(self.settings["use_fake_llm"])
         )
 
+        self.show_command_input_checkbox = QCheckBox()
+        self.show_command_input_checkbox.setChecked(
+            bool(self.settings["show_command_input"])
+        )
+        self.show_command_input_checkbox.setToolTip(
+            "Zeigt oder versteckt die manuelle Befehlszeile unter den Sprachbuttons."
+        )
+
         self.ollama_base_url_input.setToolTip(
             "Adresse der lokalen Ollama-API. Standard: http://localhost:11434"
         )
@@ -167,6 +175,7 @@ class SettingsDialog(QDialog):
         connection_layout.addRow("Modellname:", self.model_name_input)
         connection_layout.addRow("Timeout:", self.timeout_input)
         connection_layout.addRow("Fake-Modus:", self.fake_llm_checkbox)
+        connection_layout.addRow("Befehlszeile anzeigen:", self.show_command_input_checkbox)
         connection_layout.addRow("", self.test_ollama_button)
         connection_group.setLayout(connection_layout)
 
@@ -235,6 +244,7 @@ class SettingsDialog(QDialog):
         self.settings["speech_device"] = self.speech_device_input.currentText()
         self.settings["speech_compute_type"] = self.speech_compute_type_input.currentText()
         self.settings["speech_beam_size"] = self.speech_beam_size_input.value()
+        self.settings["show_command_input"] = self.show_command_input_checkbox.isChecked()
 
         save_settings(self.settings)
         self.accept()
