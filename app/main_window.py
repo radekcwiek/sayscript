@@ -193,9 +193,9 @@ class MiniEditor(QMainWindow):
         file_menu.addSeparator()
         file_menu.addAction(self.exit_action)
 
-        format_menu = menu_bar.addMenu("Format")
-        format_menu.addAction(self.bold_action)
-        format_menu.addAction(self.italic_action)
+        # format_menu = menu_bar.addMenu("Format")
+        # format_menu.addAction(self.bold_action)
+        # format_menu.addAction(self.italic_action)
 
 
     def new_file(self):
