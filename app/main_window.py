@@ -1072,25 +1072,37 @@ class MiniEditor(QMainWindow):
         settings_path = get_settings_path()
 
         message = (
-            f"Modell: {settings['ollama_model_name']}\n"
-            f"Ollama-Adresse: {settings['ollama_base_url']}\n"
             f"Settings-Datei:\n{settings_path}\n\n"
-            f"Fake-Modus: {settings['use_fake_llm']}\n"
-            f"Timeout: {settings['llm_timeout_seconds']} Sekunden\n\n"
+
+            f"Ollama / Qwen:\n"
+            f"  Modell: {settings['ollama_model_name']}\n"
+            f"  Ollama-Adresse: {settings['ollama_base_url']}\n"
+            f"  Fake-Modus: {settings['use_fake_llm']}\n"
+            f"  Timeout: {settings['llm_timeout_seconds']} Sekunden\n\n"
+
             f"Generierung:\n"
             f"  Temperature: {settings['generate_temperature']}\n"
             f"  Num predict: {settings['generate_num_predict']}\n\n"
+
             f"Transformation:\n"
             f"  Temperature: {settings['transform_temperature']}\n"
             f"  Num predict: {settings['transform_num_predict']}\n\n"
+
             f"Fortsetzung:\n"
             f"  Temperature: {settings['continue_temperature']}\n"
-            f"  Num predict: {settings['continue_num_predict']}"
+            f"  Num predict: {settings['continue_num_predict']}\n\n"
+
+            f"Spracherkennung / Whisper:\n"
+            f"  Modell: {settings['speech_model_size']}\n"
+            f"  Sample Rate: {settings['speech_sample_rate']} Hz\n"
+            f"  Device: {settings['speech_device']}\n"
+            f"  Compute Type: {settings['speech_compute_type']}\n"
+            f"  Beam Size: {settings['speech_beam_size']}"
         )
 
         QMessageBox.information(
             self,
-            "KI-Status",
+            "Systemstatus",
             message,
         )
 

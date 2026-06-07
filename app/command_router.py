@@ -188,6 +188,11 @@ class CommandRouter:
                 "modell status",
                 "ollama status",
                 "zeige ki status",
+                "systemstatus",
+                "system status",
+                "status",
+                "spracherkennung status",
+                "whisper status",
             },
             "ollama_test": {
                 "ollama test",
