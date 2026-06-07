@@ -16,6 +16,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
     QLabel,
+    QHBoxLayout,
+    QPushButton,
 )
 
 from app.command_router import CommandRouter
@@ -23,6 +25,11 @@ from app.llm_worker import LlmWorker
 from app.settings import get_settings_path, load_settings
 from app.llm_client import LlmClient
 from app.settings_dialog import SettingsDialog
+from app.speech.recorder import AudioRecorder
+from app.speech.transcriber import SpeechTranscriber
+from app.speech.speech_worker import SpeechWorker
+import os
+import re
 
 
 class MiniEditor(QMainWindow):
@@ -41,11 +48,31 @@ class MiniEditor(QMainWindow):
 
         self.command_router = CommandRouter(self)
 
+        speech_button_layout = QHBoxLayout()
+
+        self.dictation_button = QPushButton("Diktieren")
+        self.dictation_button.setCheckable(True)
+        self.dictation_button.toggled.connect(self.toggle_dictation)
+        self.dictation_button.setToolTip(
+            "Diktat starten oder stoppen. Transkribierter Text wird in den Editor eingefügt."
+        )
+        speech_button_layout.addWidget(self.dictation_button)
+
+        self.voice_command_button = QPushButton("Sprachbefehl")
+        self.voice_command_button.setCheckable(True)
+        self.voice_command_button.toggled.connect(self.toggle_voice_command)
+        self.voice_command_button.setToolTip(
+            "Sprachbefehl starten oder stoppen. Transkribierter Text wird als Befehl ausgeführt."
+        )
+        speech_button_layout.addWidget(self.voice_command_button)
+
+        layout.addLayout(speech_button_layout)
+
         self.command_label = QLabel("Befehl:")
         layout.addWidget(self.command_label)
 
         self.command_input = QLineEdit()
-        self.command_input.setPlaceholderText("z. B. fett, kursiv, lösche auswahl ...")
+        self.command_input.setPlaceholderText("z. B. fett, suche nach ..., generiere ...")
         self.command_input.returnPressed.connect(self.execute_command)
         layout.addWidget(self.command_input)
 
@@ -55,6 +82,17 @@ class MiniEditor(QMainWindow):
 
         self.llm_thread = None
         self.llm_worker = None
+
+        self.speech_thread = None
+        self.speech_worker = None
+
+        self.audio_recorder = AudioRecorder(sample_rate=16000)
+        self.speech_transcriber = SpeechTranscriber(
+            model_size="medium",
+            sample_rate=16000,
+            device="cpu",
+            compute_type="int8",
+        )
 
         self._create_actions()
         self._create_menus()
@@ -223,6 +261,228 @@ class MiniEditor(QMainWindow):
         self.command_router.execute(command)
 
 
+    def toggle_dictation(self, checked: bool) -> None:
+        if checked:
+            if self.voice_command_button.isChecked():
+                self.voice_command_button.blockSignals(True)
+                self.voice_command_button.setChecked(False)
+                self.voice_command_button.blockSignals(False)
+                self.voice_command_button.setText("Sprachbefehl")
+
+            self.dictation_button.setText("Diktieren stoppen")
+            self.show_status_message("Diktat gestartet")
+            self.start_dictation()
+        else:
+            self.dictation_button.setText("Diktieren")
+            self.show_status_message("Diktat gestoppt")
+            self.stop_dictation()
+
+
+    def toggle_voice_command(self, checked: bool) -> None:
+        if checked:
+            if self.dictation_button.isChecked():
+                self.dictation_button.blockSignals(True)
+                self.dictation_button.setChecked(False)
+                self.dictation_button.blockSignals(False)
+                self.dictation_button.setText("Diktieren")
+
+            self.voice_command_button.setText("Sprachbefehl stoppen")
+            self.show_status_message("Sprachbefehl gestartet")
+            self.start_voice_command()
+        else:
+            self.voice_command_button.setText("Sprachbefehl")
+            self.show_status_message("Sprachbefehl gestoppt")
+            self.stop_voice_command()
+
+
+    def start_dictation(self) -> None:
+        try:
+            self.audio_recorder.start()
+            self.show_status_message("Diktataufnahme läuft ...")
+        except Exception as error:
+            self.dictation_button.setChecked(False)
+            QMessageBox.warning(
+                self,
+                "Diktieren",
+                f"Die Aufnahme konnte nicht gestartet werden:\n{error}",
+            )
+
+
+    def stop_dictation(self) -> None:
+        try:
+            audio_data = self.audio_recorder.stop()
+
+            if audio_data is None:
+                self.show_status_message("Keine Aufnahme vorhanden")
+                return
+
+            self.transcribe_dictation_async(audio_data)
+
+        except Exception as error:
+            QMessageBox.warning(
+                self,
+                "Diktieren",
+                f"Das Diktat konnte nicht verarbeitet werden:\n{error}",
+            )
+
+
+    def transcribe_dictation_async(self, audio_data) -> None:
+        if self.speech_thread is not None and self.speech_thread.isRunning():
+            self.show_status_message("Spracherkennung arbeitet bereits")
+            return
+
+        self.show_status_message("Transkribiere Diktat ...")
+        self.set_speech_buttons_enabled(False)
+        self.set_command_input_enabled(False)
+
+        self.speech_thread = QThread()
+        self.speech_worker = SpeechWorker(
+            self.speech_transcriber,
+            audio_data,
+        )
+
+        self.speech_worker.moveToThread(self.speech_thread)
+
+        self.speech_thread.started.connect(self.speech_worker.run)
+        self.speech_worker.finished.connect(self.on_dictation_transcription_finished)
+        self.speech_worker.failed.connect(self.on_speech_transcription_failed)
+
+        self.speech_worker.finished.connect(self.speech_thread.quit)
+        self.speech_worker.failed.connect(self.speech_thread.quit)
+
+        self.speech_thread.finished.connect(self.speech_worker.deleteLater)
+        self.speech_thread.finished.connect(self.speech_thread.deleteLater)
+        self.speech_thread.finished.connect(self.clear_speech_worker)
+
+        self.speech_thread.start()
+
+
+    def on_dictation_transcription_finished(self, text: str) -> None:
+        self.set_speech_buttons_enabled(True)
+        self.set_command_input_enabled(True)
+
+        self.insert_text_at_position(text, self.editor.textCursor().position())
+        self.show_status_message("Diktat eingefügt")
+
+
+    def on_speech_transcription_failed(self, error_message: str) -> None:
+        self.set_speech_buttons_enabled(True)
+        self.set_command_input_enabled(True)
+
+        QMessageBox.warning(
+            self,
+            "Spracherkennung",
+            error_message,
+        )
+
+
+    def clear_speech_worker(self) -> None:
+        self.speech_thread = None
+        self.speech_worker = None
+
+
+    def start_voice_command(self) -> None:
+        try:
+            self.audio_recorder.start()
+            self.show_status_message("Sprachbefehl-Aufnahme läuft ...")
+        except Exception as error:
+            self.voice_command_button.setChecked(False)
+            QMessageBox.warning(
+                self,
+                "Sprachbefehl",
+                f"Die Aufnahme konnte nicht gestartet werden:\n{error}",
+            )
+
+
+    def stop_voice_command(self) -> None:
+        try:
+            audio_data = self.audio_recorder.stop()
+
+            if audio_data is None:
+                self.show_status_message("Keine Aufnahme vorhanden")
+                return
+
+            self.transcribe_voice_command_async(audio_data)
+
+        except Exception as error:
+            QMessageBox.warning(
+                self,
+                "Sprachbefehl",
+                f"Der Sprachbefehl konnte nicht verarbeitet werden:\n{error}",
+            )
+
+
+    def clean_voice_command_text(self, text: str) -> str:
+        command = text.strip()
+
+        # Typische Anführungszeichen entfernen
+        command = command.strip("\"'„“‚‘")
+
+        # Mehrfache Leerzeichen normalisieren
+        command = re.sub(r"\s+", " ", command)
+
+        # Satzzeichen am Ende entfernen, die Whisper gerne ergänzt
+        command = command.rstrip(".,;:!?")
+
+        # Danach nochmal Leerzeichen/Anführungszeichen entfernen
+        command = command.strip().strip("\"'„“‚‘")
+
+        return command
+
+
+    def transcribe_voice_command_async(self, audio_data) -> None:
+        if self.speech_thread is not None and self.speech_thread.isRunning():
+            self.show_status_message("Spracherkennung arbeitet bereits")
+            return
+
+        self.show_status_message("Transkribiere Sprachbefehl ...")
+        self.set_speech_buttons_enabled(False)
+        self.set_command_input_enabled(False)
+
+        self.speech_thread = QThread()
+        self.speech_worker = SpeechWorker(
+            self.speech_transcriber,
+            audio_data,
+        )
+
+        self.speech_worker.moveToThread(self.speech_thread)
+
+        self.speech_thread.started.connect(self.speech_worker.run)
+        self.speech_worker.finished.connect(self.on_voice_command_transcription_finished)
+        self.speech_worker.failed.connect(self.on_speech_transcription_failed)
+
+        self.speech_worker.finished.connect(self.speech_thread.quit)
+        self.speech_worker.failed.connect(self.speech_thread.quit)
+
+        self.speech_thread.finished.connect(self.speech_worker.deleteLater)
+        self.speech_thread.finished.connect(self.speech_thread.deleteLater)
+        self.speech_thread.finished.connect(self.clear_speech_worker)
+
+        self.speech_thread.start()
+
+
+    def on_voice_command_transcription_finished(self, text: str) -> None:
+        self.set_speech_buttons_enabled(True)
+        self.set_command_input_enabled(True)
+
+        command = self.clean_voice_command_text(text)
+
+        if not command:
+            self.show_status_message("Kein Sprachbefehl erkannt")
+            return
+
+        self.command_input.setText(command)
+        self.show_status_message(f"Sprachbefehl erkannt: {command}")
+
+        self.command_router.execute(command)
+        self.command_input.clear()
+
+
+    def set_speech_buttons_enabled(self, enabled: bool) -> None:
+        self.dictation_button.setEnabled(enabled)
+        self.voice_command_button.setEnabled(enabled)
+
+
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
         self.statusBar().showMessage(message, timeout)
 
@@ -267,6 +527,15 @@ class MiniEditor(QMainWindow):
                 self,
                 "KI arbeitet noch",
                 "Bitte warte, bis die KI-Aktion abgeschlossen ist.",
+            )
+            event.ignore()
+            return
+
+        if self.speech_thread is not None and self.speech_thread.isRunning():
+            QMessageBox.information(
+                self,
+                "Spracherkennung arbeitet noch",
+                "Bitte warte, bis die Transkription abgeschlossen ist.",
             )
             event.ignore()
             return
