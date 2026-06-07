@@ -133,12 +133,18 @@ class LlmClient:
         temperature: float,
         num_predict: int,
     ) -> str:
-        url = f"{self.base_url}/api/generate"
+        url = f"{self.base_url}/api/chat"
 
         payload = {
             "model": self.model_name,
-            "prompt": prompt,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
             "stream": False,
+            "think": False,
             "options": {
                 "temperature": temperature,
                 "num_predict": num_predict,
@@ -172,12 +178,18 @@ class LlmClient:
             )
 
         data = response.json()
-        generated_text = data.get("response", "").strip()
+
+        message = data.get("message", {})
+        generated_text = message.get("content", "").strip()
 
         if not generated_text:
+            thinking_text = message.get("thinking", "").strip()
+
             return (
                 "[Fehler]\n\n"
-                "Das Modell hat keinen Text zurückgegeben."
+                "Das Modell hat keinen sichtbaren Text zurückgegeben.\n\n"
+                f"Thinking-Feld:\n{thinking_text[:1000]}\n\n"
+                f"Ollama-Antwort:\n{data}"
             )
 
         return generated_text
