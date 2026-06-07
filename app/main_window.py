@@ -68,6 +68,10 @@ class MiniEditor(QMainWindow):
 
         layout.addLayout(speech_button_layout)
 
+        self.speech_result_label = QLabel("Erkannte Sprache: -")
+        self.speech_result_label.setWordWrap(True)
+        layout.addWidget(self.speech_result_label)
+
         self.command_label = QLabel("Befehl:")
         layout.addWidget(self.command_label)
 
@@ -367,13 +371,15 @@ class MiniEditor(QMainWindow):
         self.set_speech_buttons_enabled(True)
         self.set_command_input_enabled(True)
 
+        self.show_speech_result(text)
         self.insert_text_at_position(text, self.editor.textCursor().position())
         self.show_status_message("Diktat eingefügt")
-
 
     def on_speech_transcription_failed(self, error_message: str) -> None:
         self.set_speech_buttons_enabled(True)
         self.set_command_input_enabled(True)
+
+        self.show_speech_result("")
 
         QMessageBox.warning(
             self,
@@ -474,6 +480,8 @@ class MiniEditor(QMainWindow):
         self.set_speech_buttons_enabled(True)
         self.set_command_input_enabled(True)
 
+        self.show_speech_result(text)
+
         command = self.clean_voice_command_text(text)
 
         if not command:
@@ -532,6 +540,13 @@ class MiniEditor(QMainWindow):
             compute_type=settings["speech_compute_type"],
             beam_size=int(settings["speech_beam_size"]),
         )
+
+
+    def show_speech_result(self, text: str) -> None:
+        if text:
+            self.speech_result_label.setText(f"Erkannte Sprache: {text}")
+        else:
+            self.speech_result_label.setText("Erkannte Sprache: -")
 
 
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
