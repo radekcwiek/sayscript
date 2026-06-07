@@ -12,11 +12,13 @@ class SpeechTranscriber:
         sample_rate: int = 16000,
         device: str = "cpu",
         compute_type: str = "int8",
+        beam_size: int = 10,
     ):
         self.model_size = model_size
         self.sample_rate = sample_rate
         self.device = device
         self.compute_type = compute_type
+        self.beam_size = beam_size
         self.model = None
 
     def load_model(self) -> None:
@@ -45,7 +47,7 @@ class SpeechTranscriber:
             segments, info = self.model.transcribe(
                 str(temp_path),
                 language="de",
-                beam_size=10,
+                beam_size=self.beam_size,
                 initial_prompt=(
                     "Dies ist ein deutscher diktierter Text für eine Textverarbeitung. "
                     "Achte auf korrekte deutsche Rechtschreibung, Umlaute und sinnvolle Wörter."

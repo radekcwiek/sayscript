@@ -86,12 +86,18 @@ class MiniEditor(QMainWindow):
         self.speech_thread = None
         self.speech_worker = None
 
-        self.audio_recorder = AudioRecorder(sample_rate=16000)
+        settings = load_settings()
+
+        self.audio_recorder = AudioRecorder(
+            sample_rate=int(settings["speech_sample_rate"])
+        )
+
         self.speech_transcriber = SpeechTranscriber(
-            model_size="medium",
-            sample_rate=16000,
-            device="cpu",
-            compute_type="int8",
+            model_size=settings["speech_model_size"],
+            sample_rate=int(settings["speech_sample_rate"]),
+            device=settings["speech_device"],
+            compute_type=settings["speech_compute_type"],
+            beam_size=int(settings["speech_beam_size"]),
         )
 
         self._create_actions()
@@ -510,6 +516,22 @@ class MiniEditor(QMainWindow):
     def set_speech_buttons_enabled(self, enabled: bool) -> None:
         self.dictation_button.setEnabled(enabled)
         self.voice_command_button.setEnabled(enabled)
+
+
+    def reload_speech_settings(self) -> None:
+        settings = load_settings()
+
+        self.audio_recorder = AudioRecorder(
+            sample_rate=int(settings["speech_sample_rate"])
+        )
+
+        self.speech_transcriber = SpeechTranscriber(
+            model_size=settings["speech_model_size"],
+            sample_rate=int(settings["speech_sample_rate"]),
+            device=settings["speech_device"],
+            compute_type=settings["speech_compute_type"],
+            beam_size=int(settings["speech_beam_size"]),
+        )
 
 
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
@@ -1106,4 +1128,5 @@ class MiniEditor(QMainWindow):
 
         if dialog.exec() == dialog.DialogCode.Accepted:
             self.command_router.llm_client = LlmClient()
+            self.reload_speech_settings()
             self.show_status_message("Einstellungen gespeichert")

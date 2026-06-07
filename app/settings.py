@@ -33,6 +33,11 @@ def get_default_settings() -> dict:
         "transform_num_predict": config.TRANSFORM_NUM_PREDICT,
         "continue_temperature": config.CONTINUE_TEMPERATURE,
         "continue_num_predict": config.CONTINUE_NUM_PREDICT,
+        "speech_model_size": config.SPEECH_MODEL_SIZE,
+        "speech_sample_rate": config.SPEECH_SAMPLE_RATE,
+        "speech_device": config.SPEECH_DEVICE,
+        "speech_compute_type": config.SPEECH_COMPUTE_TYPE,
+        "speech_beam_size": config.SPEECH_BEAM_SIZE,
     }
 
 

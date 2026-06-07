@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSpinBox,
     QVBoxLayout,
+    QComboBox,
 )
 
 from app.settings import load_settings, save_settings
@@ -84,6 +85,38 @@ class SettingsDialog(QDialog):
             self.settings["continue_num_predict"]
         )
 
+        self.speech_model_size_input = QComboBox()
+        self.speech_model_size_input.addItems(["tiny", "base", "small", "medium", "large-v3"])
+        self.speech_model_size_input.setCurrentText(
+            self.settings["speech_model_size"]
+        )
+
+        self.speech_sample_rate_input = QSpinBox()
+        self.speech_sample_rate_input.setRange(8000, 48000)
+        self.speech_sample_rate_input.setSingleStep(1000)
+        self.speech_sample_rate_input.setValue(
+            int(self.settings["speech_sample_rate"])
+        )
+        self.speech_sample_rate_input.setSuffix(" Hz")
+
+        self.speech_device_input = QComboBox()
+        self.speech_device_input.addItems(["cpu", "cuda"])
+        self.speech_device_input.setCurrentText(
+            self.settings["speech_device"]
+        )
+
+        self.speech_compute_type_input = QComboBox()
+        self.speech_compute_type_input.addItems(["int8", "float32", "float16"])
+        self.speech_compute_type_input.setCurrentText(
+            self.settings["speech_compute_type"]
+        )
+
+        self.speech_beam_size_input = QSpinBox()
+        self.speech_beam_size_input.setRange(1, 20)
+        self.speech_beam_size_input.setValue(
+            int(self.settings["speech_beam_size"])
+        )
+
         temperature_tooltip = (
             "Steuert die Kreativität der Antwort. "
             "Niedrige Werte sind sachlicher, höhere Werte freier und kreativer."
@@ -92,6 +125,26 @@ class SettingsDialog(QDialog):
         num_predict_tooltip = (
             "Maximale Länge der KI-Antwort in Tokens. "
             "Höhere Werte erlauben längere Antworten, können aber langsamer sein."
+        )
+
+        self.speech_model_size_input.setToolTip(
+            "Whisper-Modellgröße. Größer ist genauer, aber langsamer. Für Dictator empfohlen: medium."
+        )
+
+        self.speech_sample_rate_input.setToolTip(
+            "Samplerate der Mikrofonaufnahme. Für Dictator aktuell empfohlen: 16000 Hz."
+        )
+
+        self.speech_device_input.setToolTip(
+            "cpu für normale Rechner, cuda für NVIDIA-GPU."
+        )
+
+        self.speech_compute_type_input.setToolTip(
+            "Rechenformat für faster-whisper. CPU: int8 oder float32. NVIDIA-GPU: float16."
+        )
+
+        self.speech_beam_size_input.setToolTip(
+            "Suchbreite der Transkription. Höher kann genauer sein, aber langsamer. Empfohlen: 10."
         )
 
         self.generate_temperature_input.setToolTip(temperature_tooltip)
@@ -135,6 +188,15 @@ class SettingsDialog(QDialog):
         continue_layout.addRow("Max. Antwortlänge:", self.continue_num_predict_input)
         continue_group.setLayout(continue_layout)
 
+        speech_group = QGroupBox("Spracherkennung")
+        speech_layout = QFormLayout()
+        speech_layout.addRow("Whisper-Modell:", self.speech_model_size_input)
+        speech_layout.addRow("Sample Rate:", self.speech_sample_rate_input)
+        speech_layout.addRow("Device:", self.speech_device_input)
+        speech_layout.addRow("Compute Type:", self.speech_compute_type_input)
+        speech_layout.addRow("Beam Size:", self.speech_beam_size_input)
+        speech_group.setLayout(speech_layout)
+
         self.button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
@@ -147,6 +209,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(generate_group)
         layout.addWidget(transform_group)
         layout.addWidget(continue_group)
+        layout.addWidget(speech_group)
         layout.addWidget(self.button_box)
 
         self.setLayout(layout)
@@ -166,6 +229,12 @@ class SettingsDialog(QDialog):
 
         self.settings["continue_temperature"] = self.continue_temperature_input.value()
         self.settings["continue_num_predict"] = self.continue_num_predict_input.value()
+
+        self.settings["speech_model_size"] = self.speech_model_size_input.currentText()
+        self.settings["speech_sample_rate"] = self.speech_sample_rate_input.value()
+        self.settings["speech_device"] = self.speech_device_input.currentText()
+        self.settings["speech_compute_type"] = self.speech_compute_type_input.currentText()
+        self.settings["speech_beam_size"] = self.speech_beam_size_input.value()
 
         save_settings(self.settings)
         self.accept()
