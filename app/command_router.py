@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any
 from app.llm_client import LlmClient
 import re
+from difflib import SequenceMatcher
 
 
 @dataclass
@@ -301,6 +302,20 @@ class CommandRouter:
         if action is not None:
             return ParsedCommand(action)
 
+        fuzzy_match = self.get_fuzzy_action(normalized_command)
+
+        if fuzzy_match is not None:
+            fuzzy_action, fuzzy_alias, fuzzy_score = fuzzy_match
+            return ParsedCommand(
+                "fuzzy_action",
+                {
+                    "action": fuzzy_action,
+                    "alias": fuzzy_alias,
+                    "score": fuzzy_score,
+                    "original": normalized_command,
+                },
+            )
+
         generation_prompt = self.parse_generate_text(original_command, normalized_command)
 
         if generation_prompt is not None:
@@ -312,6 +327,19 @@ class CommandRouter:
     def run_command(self, parsed_command: ParsedCommand) -> None:
         action = parsed_command.action
         value = parsed_command.value
+
+        if action == "fuzzy_action":
+            corrected_action = value["action"]
+            corrected_alias = value["alias"]
+            original = value["original"]
+            score = value["score"]
+
+            self.editor_window.show_status_message(
+                f"Befehl korrigiert: {original} → {corrected_alias}"
+            )
+
+            self.run_command(ParsedCommand(corrected_action))
+            return
 
         if action == "bold":
             self.editor_window.toggle_bold()
@@ -723,5 +751,34 @@ class CommandRouter:
 
         if instruction:
             return instruction
+
+        return None
+
+
+    def get_fuzzy_action(self, command: str) -> tuple[str, str, float] | None:
+        best_action = None
+        best_alias = None
+        best_score = 0.0
+
+        for action, aliases in self.command_aliases.items():
+            for alias in aliases:
+                score = SequenceMatcher(None, command, alias).ratio()
+
+                if score > best_score:
+                    best_score = score
+                    best_action = action
+                    best_alias = alias
+
+        if best_action is None or best_alias is None:
+            return None
+
+        # Kurze Befehle brauchen besonders hohe Sicherheit.
+        if len(command) <= 6:
+            threshold = 0.82
+        else:
+            threshold = 0.78
+
+        if best_score >= threshold:
+            return best_action, best_alias, best_score
 
         return None

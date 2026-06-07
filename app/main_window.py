@@ -427,6 +427,9 @@ class MiniEditor(QMainWindow):
         # Danach nochmal Leerzeichen/Anführungszeichen entfernen
         command = command.strip().strip("\"'„“‚‘")
 
+        # Häufige Transkriptionsvarianten korrigieren
+        command = self.apply_voice_command_corrections(command)
+
         return command
 
 
@@ -472,10 +475,36 @@ class MiniEditor(QMainWindow):
             return
 
         self.command_input.setText(command)
-        self.show_status_message(f"Sprachbefehl erkannt: {command}")
+        if command != text.strip():
+            self.show_status_message(f"Sprachbefehl erkannt: {text.strip()} → {command}")
+        else:
+            self.show_status_message(f"Sprachbefehl erkannt: {command}")
 
         self.command_router.execute(command)
         self.command_input.clear()
+
+
+    def apply_voice_command_corrections(self, command: str) -> str:
+        normalized = command.strip().lower()
+
+        corrections = {
+            "fett punkt": "fett",
+            "fett ausrufezeichen": "fett",
+            "kursiv punkt": "kursiv",
+            "speichern punkt": "speichern",
+            "öffnen punkt": "öffnen",
+            "oeffnen": "öffnen",
+            "rückgängig punkt": "rückgängig",
+            "rueckgängig": "rückgängig",
+            "rueckgaengig": "rückgängig",
+            "wiederholen punkt": "wiederholen",
+            "alles markieren punkt": "alles markieren",
+            "neue zeile punkt": "neue zeile",
+            "ki status punkt": "ki status",
+            "ollama test punkt": "ollama test",
+        }
+
+        return corrections.get(normalized, command)
 
 
     def set_speech_buttons_enabled(self, enabled: bool) -> None:
