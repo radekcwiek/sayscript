@@ -57,11 +57,15 @@ class LlmClient:
 
     def build_generation_prompt(self, user_prompt: str) -> str:
         return (
-            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-            "Textverarbeitung namens Dictator.\n\n"
-            "Schreibe den gewünschten Text direkt aus. "
-            "Gib keine Erklärungen über deine Vorgehensweise. "
-            "Gib nur den Text zurück, der in das Dokument eingefügt werden soll.\n\n"
+            "Du bist ein Schreibassistent in einer Textverarbeitung.\n\n"
+            "WICHTIG:\n"
+            "- Gib ausschließlich den fertigen Text zurück.\n"
+            "- Keine Analyse.\n"
+            "- Keine Gedanken.\n"
+            "- Keine Erklärung.\n"
+            "- Keine Einleitung.\n"
+            "- Schreibe nicht, was du tun wirst.\n"
+            "- Gib nur den Text aus, der direkt in ein Dokument eingefügt werden soll.\n\n"
             f"Aufgabe: {user_prompt}"
         )
 
