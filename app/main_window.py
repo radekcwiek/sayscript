@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QHBoxLayout,
     QPushButton,
+    QSizePolicy,
 )
 
 from app.command_router import CommandRouter
@@ -40,15 +41,25 @@ class MiniEditor(QMainWindow):
         self.setWindowTitle(tr("window_title_default"))
         self.resize(900, 650)
 
+        paper_min_width = 451
+        editor_area_margin = 24
+        window_extra_margin = 40
+
+        self.setMinimumWidth(
+            paper_min_width
+            + editor_area_margin * 2
+            + window_extra_margin
+        )
+
         self.setStyleSheet("""
             QWidget#editorArea {
-                background-color: #d8d8d8;
+                background-color: #d7ecff;
             }
 
             QTextEdit#paperEditor {
                 background-color: white;
                 color: black;
-                border: 1px solid #b8b8b8;
+                border: 1px solid #d7ecff;
                 padding: 48px;
                 font-size: 12pt;
             }
@@ -61,17 +72,25 @@ class MiniEditor(QMainWindow):
         editor_area.setObjectName("editorArea")
 
         editor_area_layout = QHBoxLayout(editor_area)
-        editor_area_layout.setContentsMargins(24, 24, 24, 24)
+        editor_area_layout.setContentsMargins(
+            editor_area_margin,
+            editor_area_margin,
+            editor_area_margin,
+            editor_area_margin
+        )
 
         self.editor = QTextEdit()
         self.editor.setObjectName("paperEditor")
-        self.editor.setFixedWidth(794)
-        self.editor.setMinimumHeight(900)
+
+        self.editor.setMinimumWidth(paper_min_width)
+        self.editor.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
+
         self.editor.document().modificationChanged.connect(self.update_window_title)
 
-        editor_area_layout.addStretch()
         editor_area_layout.addWidget(self.editor)
-        editor_area_layout.addStretch()
 
         layout.addWidget(editor_area)
 
