@@ -41,8 +41,8 @@ TRANSLATIONS = {
 
         "dialog_open_file_title": "Datei öffnen",
         "dialog_save_file_title": "Datei speichern",
-        "file_filter_open": "HTML-Dateien (*.html);;Textdateien (*.txt);;Alle Dateien (*.*)",
-        "file_filter_save": "HTML-Dateien (*.html);;Textdateien (*.txt)",
+        "file_filter_open": "HTML-Dateien (*.html);;Markdown-Dateien (*.md *.markdown);;Textdateien (*.txt);;Alle Dateien (*.*)",
+        "file_filter_save": "HTML-Dateien (*.html);;Markdown-Dateien (*.md *.markdown);;Textdateien (*.txt)",
 
         "error_title": "Fehler",
         "error_file_open": "Datei konnte nicht geöffnet werden:\n{error}",
@@ -138,8 +138,6 @@ TRANSLATIONS = {
         "file_type_html": "HTML-Dateien (*.html)",
         "file_type_text": "Textdateien (*.txt)",
         "file_type_all": "Alle Dateien (*.*)",
-        "file_filter_open": "HTML-Dateien (*.html);;Textdateien (*.txt);;Alle Dateien (*.*)",
-        "file_filter_save": "HTML-Dateien (*.html);;Textdateien (*.txt)",
 
         "status_open_cancelled": "Öffnen abgebrochen",
         "status_save_cancelled": "Speichern abgebrochen",
@@ -185,8 +183,8 @@ TRANSLATIONS = {
 
         "dialog_open_file_title": "Open file",
         "dialog_save_file_title": "Save file",
-        "file_filter_open": "HTML files (*.html);;Text files (*.txt);;All files (*.*)",
-        "file_filter_save": "HTML files (*.html);;Text files (*.txt)",
+        "file_filter_open": "HTML files (*.html);;Markdown files (*.md *.markdown);;Text files (*.txt);;All files (*.*)",
+        "file_filter_save": "HTML files (*.html);;Markdown files (*.md *.markdown);;Text files (*.txt)",
 
         "error_title": "Error",
         "error_file_open": "The file could not be opened:\n{error}",
@@ -282,8 +280,6 @@ TRANSLATIONS = {
         "file_type_html": "HTML files (*.html)",
         "file_type_text": "Text files (*.txt)",
         "file_type_all": "All files (*.*)",
-        "file_filter_open": "HTML files (*.html);;Text files (*.txt);;All files (*.*)",
-        "file_filter_save": "HTML files (*.html);;Text files (*.txt)",
 
         "status_open_cancelled": "Open cancelled",
         "status_save_cancelled": "Save cancelled",

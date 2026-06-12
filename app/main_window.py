@@ -238,8 +238,14 @@ class MiniEditor(QMainWindow):
             with open(file_path, "r", encoding="utf-8") as file:
                 content = file.read()
 
-            if file_path.lower().endswith(".html"):
+            lower_file_path = file_path.lower()
+
+            if lower_file_path.endswith(".html"):
                 self.editor.setHtml(content)
+
+            elif lower_file_path.endswith((".md", ".markdown")):
+                self.editor.setMarkdown(content)
+
             else:
                 self.editor.setPlainText(content)
 
@@ -283,8 +289,14 @@ class MiniEditor(QMainWindow):
     def _write_file(self, file_path):
         try:
             with open(file_path, "w", encoding="utf-8") as file:
-                if file_path.lower().endswith(".txt"):
+                lower_file_path = file_path.lower()
+
+                if lower_file_path.endswith(".txt"):
                     file.write(self.editor.toPlainText())
+
+                elif lower_file_path.endswith(".md", ".markdown"):
+                    file.write(self.editor.document().toMarkdown())
+
                 else:
                     file.write(self.editor.toHtml())
 
