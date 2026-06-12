@@ -4,6 +4,8 @@ from pathlib import Path
 from faster_whisper import WhisperModel
 from scipy.io.wavfile import write
 
+from app.localization import speech_language, speech_initial_prompt
+
 
 class SpeechTranscriber:
     def __init__(
@@ -46,12 +48,9 @@ class SpeechTranscriber:
 
             segments, info = self.model.transcribe(
                 str(temp_path),
-                language="de",
+                language=speech_language(),
                 beam_size=self.beam_size,
-                initial_prompt=(
-                    "Dies ist ein deutscher diktierter Text für eine Textverarbeitung. "
-                    "Achte auf korrekte deutsche Rechtschreibung, Umlaute und sinnvolle Wörter."
-                ),
+                initial_prompt=speech_initial_prompt(),
             )
 
             full_text = ""

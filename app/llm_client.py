@@ -1,6 +1,11 @@
 import requests
 from app import config
 from app.settings import load_settings
+from app.localization import (
+    llm_message,
+    llm_prompt,
+    llm_text_generation_language_name,
+)
 
 
 class LlmClient:
@@ -39,12 +44,9 @@ class LlmClient:
 
         return self.generate_with_ollama(prompt)
 
+
     def generate_fake_text(self, prompt: str) -> str:
-        return (
-            "[KI-Generierung Platzhalter]\n\n"
-            f"Aufgabe: {prompt}\n\n"
-            "Hier wird später die Antwort von Qwen eingefügt."
-        )
+        return llm_message("fake_generation", prompt=prompt)
 
 
     def generate_with_ollama(self, prompt: str) -> str:
@@ -56,26 +58,21 @@ class LlmClient:
 
 
     def build_generation_prompt(self, user_prompt: str) -> str:
-        return (
-            "Du bist ein Schreibassistent in einer Textverarbeitung.\n\n"
-            "WICHTIG:\n"
-            "- Gib ausschließlich den fertigen Text zurück.\n"
-            "- Keine Analyse.\n"
-            "- Keine Gedanken.\n"
-            "- Keine Erklärung.\n"
-            "- Keine Einleitung.\n"
-            "- Schreibe nicht, was du tun wirst.\n"
-            "- Gib nur den Text aus, der direkt in ein Dokument eingefügt werden soll.\n\n"
-            f"Aufgabe: {user_prompt}"
+        output_language = self.get_text_generation_language_name()
+
+        return llm_prompt(
+            "generation",
+            output_language=output_language,
+            user_prompt=user_prompt,
         )
 
 
     def transform_text(self, instruction: str, selected_text: str) -> str:
         if self.use_fake_response:
-            return (
-                "[KI-Transformation Platzhalter]\n\n"
-                f"Anweisung: {instruction}\n\n"
-                f"Ausgangstext:\n{selected_text}"
+            return llm_message(
+                "fake_transform",
+                instruction=instruction,
+                selected_text=selected_text,
             )
 
         return self.transform_with_ollama(instruction, selected_text)
@@ -90,23 +87,21 @@ class LlmClient:
 
 
     def build_transform_prompt(self, instruction: str, selected_text: str) -> str:
-        return (
-            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-            "Textverarbeitung namens Dictator.\n\n"
-            "Bearbeite den folgenden Text gemäß der Anweisung. "
-            "Gib ausschließlich den überarbeiteten Text zurück. "
-            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
-            f"Anweisung: {instruction}\n\n"
-            f"Text:\n{selected_text}"
+        output_language = self.get_text_generation_language_name()
+
+        return llm_prompt(
+            "transform",
+            output_language=output_language,
+            instruction=instruction,
+            selected_text=selected_text,
         )
 
 
     def continue_text(self, context_text: str) -> str:
         if self.use_fake_response:
-            return (
-                "[KI-Fortsetzung Platzhalter]\n\n"
-                f"Kontext:\n{context_text}\n\n"
-                "Hier wird später die Fortsetzung von Qwen eingefügt."
+            return llm_message(
+                "fake_continue",
+                context_text=context_text,
             )
 
         return self.continue_with_ollama(context_text)
@@ -121,13 +116,12 @@ class LlmClient:
 
 
     def build_continue_prompt(self, context_text: str) -> str:
-        return (
-            "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-            "Textverarbeitung namens Dictator.\n\n"
-            "Schreibe den folgenden Text sinnvoll weiter. "
-            "Gib nur die Fortsetzung zurück, nicht den bisherigen Text. "
-            "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung.\n\n"
-            f"Bisheriger Text:\n{context_text}"
+        output_language = self.get_text_generation_language_name()
+
+        return llm_prompt(
+            "continue",
+            output_language=output_language,
+            context_text=context_text,
         )
 
 
@@ -164,22 +158,13 @@ class LlmClient:
             response.raise_for_status()
 
         except requests.exceptions.ConnectionError:
-            return (
-                "[Fehler]\n\n"
-                "Ollama ist nicht erreichbar. Läuft Ollama auf diesem Rechner?"
-            )
+            return llm_message("ollama_connection_error")
 
         except requests.exceptions.Timeout:
-            return (
-                "[Fehler]\n\n"
-                "Die KI-Anfrage hat zu lange gedauert."
-            )
+            return llm_message("ollama_timeout_error")
 
         except requests.exceptions.RequestException as error:
-            return (
-                "[Fehler]\n\n"
-                f"Die KI-Anfrage ist fehlgeschlagen:\n{error}"
-            )
+            return llm_message("ollama_request_error", error=error)
 
         data = response.json()
 
@@ -189,11 +174,10 @@ class LlmClient:
         if not generated_text:
             thinking_text = message.get("thinking", "").strip()
 
-            return (
-                "[Fehler]\n\n"
-                "Das Modell hat keinen sichtbaren Text zurückgegeben.\n\n"
-                f"Thinking-Feld:\n{thinking_text[:1000]}\n\n"
-                f"Ollama-Antwort:\n{data}"
+            return llm_message(
+                "ollama_empty_response",
+                thinking_text=thinking_text[:1000],
+                data=data,
             )
 
         return generated_text
@@ -212,21 +196,21 @@ class LlmClient:
         except requests.exceptions.ConnectionError:
             return {
                 "ok": False,
-                "message": "Ollama ist nicht erreichbar.",
+                "message": llm_message("ollama_status_connection_error"),
                 "models": [],
             }
 
         except requests.exceptions.Timeout:
             return {
                 "ok": False,
-                "message": "Die Ollama-Anfrage hat zu lange gedauert.",
+                "message": llm_message("ollama_status_timeout_error"),
                 "models": [],
             }
 
         except requests.exceptions.RequestException as error:
             return {
                 "ok": False,
-                "message": f"Ollama-Statusabfrage fehlgeschlagen: {error}",
+                "message": llm_message("ollama_status_request_error", error=error),
                 "models": [],
             }
 
@@ -242,10 +226,14 @@ class LlmClient:
         model_available = self.model_name in model_names
 
         if model_available:
-            message = f"Ollama ist erreichbar. Modell gefunden: {self.model_name}"
+            message = llm_message(
+                "ollama_status_model_found",
+                model_name=self.model_name,
+            )
         else:
-            message = (
-                f"Ollama ist erreichbar, aber Modell nicht gefunden: {self.model_name}"
+            message = llm_message(
+                "ollama_status_model_not_found",
+                model_name=self.model_name,
             )
 
         return {
@@ -253,3 +241,8 @@ class LlmClient:
             "message": message,
             "models": model_names,
         }
+
+
+    def get_text_generation_language_name(self) -> str:
+        language_code = self.settings.get("text_generation_language", "de")
+        return llm_text_generation_language_name(language_code)

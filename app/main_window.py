@@ -28,6 +28,7 @@ from app.settings_dialog import SettingsDialog
 from app.speech.recorder import AudioRecorder
 from app.speech.transcriber import SpeechTranscriber
 from app.speech.speech_worker import SpeechWorker
+from app.localization import tr, voice_command_corrections
 import os
 import re
 
@@ -36,7 +37,7 @@ class MiniEditor(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Dictator - Mini Editor")
+        self.setWindowTitle(tr("window_title_default"))
         self.resize(900, 650)
 
         self.setStyleSheet("""
@@ -78,33 +79,29 @@ class MiniEditor(QMainWindow):
 
         speech_button_layout = QHBoxLayout()
 
-        self.dictation_button = QPushButton("Diktieren")
+        self.dictation_button = QPushButton(tr("button_dictation_start"))
         self.dictation_button.setCheckable(True)
         self.dictation_button.toggled.connect(self.toggle_dictation)
-        self.dictation_button.setToolTip(
-            "Diktat starten oder stoppen. Transkribierter Text wird in den Editor eingefügt."
-        )
+        self.dictation_button.setToolTip(tr("tooltip_dictation"))
         speech_button_layout.addWidget(self.dictation_button)
 
-        self.voice_command_button = QPushButton("Sprachbefehl")
+        self.voice_command_button = QPushButton(tr("button_voice_command_start"))
         self.voice_command_button.setCheckable(True)
         self.voice_command_button.toggled.connect(self.toggle_voice_command)
-        self.voice_command_button.setToolTip(
-            "Sprachbefehl starten oder stoppen. Transkribierter Text wird als Befehl ausgeführt."
-        )
+        self.voice_command_button.setToolTip(tr("tooltip_voice_command"))
         speech_button_layout.addWidget(self.voice_command_button)
 
         layout.addLayout(speech_button_layout)
 
-        self.speech_result_label = QLabel("Erkannte Sprache: -")
+        self.speech_result_label = QLabel(tr("speech_result_empty"))
         self.speech_result_label.setWordWrap(True)
         layout.addWidget(self.speech_result_label)
 
-        self.command_label = QLabel("Befehl:")
+        self.command_label = QLabel(tr("command_label"))
         layout.addWidget(self.command_label)
 
         self.command_input = QLineEdit()
-        self.command_input.setPlaceholderText("z. B. fett, suche nach ..., generiere ...")
+        self.command_input.setPlaceholderText(tr("command_placeholder"))
         self.command_input.returnPressed.connect(self.execute_command)
         layout.addWidget(self.command_input)
 
@@ -143,7 +140,7 @@ class MiniEditor(QMainWindow):
             }
         """)
 
-        self.status_label = QLabel("Bereit")
+        self.status_label = QLabel(tr("status_ready"))
         self.status_label.setContentsMargins(
             layout.contentsMargins().left(),
             0,
@@ -155,35 +152,29 @@ class MiniEditor(QMainWindow):
 
 
     def _create_actions(self):
-        self.new_action = QAction("Neu", self)
+        self.new_action = QAction(tr("action_new"), self)
         self.new_action.triggered.connect(self.new_file)
 
-        self.open_action = QAction("Öffnen", self)
+        self.open_action = QAction(tr("action_open"), self)
         self.open_action.triggered.connect(self.open_file)
 
-        self.save_action = QAction("Speichern", self)
+        self.save_action = QAction(tr("action_save"), self)
         self.save_action.triggered.connect(self.save_file)
 
-        self.save_as_action = QAction("Speichern unter", self)
+        self.save_as_action = QAction(tr("action_save_as"), self)
         self.save_as_action.triggered.connect(self.save_file_as)
 
-        self.exit_action = QAction("Beenden", self)
+        self.exit_action = QAction(tr("action_exit"), self)
         self.exit_action.triggered.connect(self.close)
 
-        self.bold_action = QAction("Fett", self)
-        self.bold_action.triggered.connect(self.toggle_bold)
-
-        self.italic_action = QAction("Kursiv", self)
-        self.italic_action.triggered.connect(self.toggle_italic)
-
-        self.settings_action = QAction("Einstellungen", self)
+        self.settings_action = QAction(tr("action_settings"), self)
         self.settings_action.triggered.connect(self.open_settings_dialog)
 
 
     def _create_menus(self):
         menu_bar = self.menuBar()
 
-        file_menu = menu_bar.addMenu("Datei")
+        file_menu = menu_bar.addMenu(tr("menu_file"))
         file_menu.addAction(self.new_action)
         file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
@@ -206,7 +197,7 @@ class MiniEditor(QMainWindow):
         self.current_file = None
         self.editor.document().setModified(False)
         self.update_window_title()
-        self.show_status_message("Neue Datei erstellt")
+        self.show_status_message(tr("status_new_file_created"))
         return True
 
 
@@ -216,9 +207,9 @@ class MiniEditor(QMainWindow):
 
         file_path, _ = QFileDialog.getOpenFileName(
             self,
-            "Datei öffnen",
+            tr("dialog_open_file_title"),
             "",
-            "HTML-Dateien (*.html);;Textdateien (*.txt);;Alle Dateien (*.*)",
+            tr("file_filter_open"),
         )
 
         if not file_path:
@@ -236,11 +227,15 @@ class MiniEditor(QMainWindow):
             self.current_file = file_path
             self.editor.document().setModified(False)
             self.update_window_title()
-            self.show_status_message("Datei geöffnet")
+            self.show_status_message(tr("status_file_opened"))
             return True
 
         except OSError as error:
-            QMessageBox.critical(self, "Fehler", f"Datei konnte nicht geöffnet werden:\n{error}")
+            QMessageBox.critical(
+                self,
+                tr("error_title"),
+                tr("error_file_open", error=error),
+            )
             return False
 
 
@@ -254,9 +249,9 @@ class MiniEditor(QMainWindow):
     def save_file_as(self):
         file_path, _ = QFileDialog.getSaveFileName(
             self,
-            "Datei speichern",
+            tr("dialog_save_file_title"),
             "",
-            "HTML-Dateien (*.html);;Textdateien (*.txt)",
+            tr("file_filter_save"),
         )
 
         if not file_path:
@@ -276,11 +271,15 @@ class MiniEditor(QMainWindow):
 
             self.editor.document().setModified(False)
             self.update_window_title()
-            self.show_status_message("Datei gespeichert")
+            self.show_status_message(tr("status_file_saved"))
             return True
 
         except OSError as error:
-            QMessageBox.critical(self, "Fehler", f"Datei konnte nicht gespeichert werden:\n{error}")
+            QMessageBox.critical(
+                self,
+                tr("error_title"),
+                tr("error_file_save", error=error),
+            )
             return False
 
 
@@ -321,14 +320,14 @@ class MiniEditor(QMainWindow):
                 self.voice_command_button.blockSignals(True)
                 self.voice_command_button.setChecked(False)
                 self.voice_command_button.blockSignals(False)
-                self.voice_command_button.setText("Sprachbefehl")
+                self.voice_command_button.setText(tr("button_voice_command_start"))
 
-            self.dictation_button.setText("Diktieren stoppen")
-            self.show_status_message("Diktat gestartet")
+            self.dictation_button.setText(tr("button_dictation_stop"))
+            self.show_status_message(tr("status_dictation_started"))
             self.start_dictation()
         else:
-            self.dictation_button.setText("Diktieren")
-            self.show_status_message("Diktat gestoppt")
+            self.dictation_button.setText(tr("button_dictation_start"))
+            self.show_status_message(tr("status_dictation_stopped"))
             self.stop_dictation()
 
 
@@ -338,27 +337,27 @@ class MiniEditor(QMainWindow):
                 self.dictation_button.blockSignals(True)
                 self.dictation_button.setChecked(False)
                 self.dictation_button.blockSignals(False)
-                self.dictation_button.setText("Diktieren")
+                self.dictation_button.setText(tr("button_dictation_start"))
 
-            self.voice_command_button.setText("Sprachbefehl stoppen")
-            self.show_status_message("Sprachbefehl gestartet")
+            self.voice_command_button.setText(tr("button_voice_command_stop"))
+            self.show_status_message(tr("status_voice_command_started"))
             self.start_voice_command()
         else:
-            self.voice_command_button.setText("Sprachbefehl")
-            self.show_status_message("Sprachbefehl gestoppt")
+            self.voice_command_button.setText(tr("button_voice_command_start"))
+            self.show_status_message(tr("status_voice_command_stopped"))
             self.stop_voice_command()
 
 
     def start_dictation(self) -> None:
         try:
             self.audio_recorder.start()
-            self.show_status_message("Diktataufnahme läuft ...")
+            self.show_status_message(tr("status_dictation_recording"))
         except Exception as error:
             self.dictation_button.setChecked(False)
             QMessageBox.warning(
                 self,
-                "Diktieren",
-                f"Die Aufnahme konnte nicht gestartet werden:\n{error}",
+                tr("dialog_dictation_title"),
+                tr("error_recording_start", error=error),
             )
 
 
@@ -367,7 +366,7 @@ class MiniEditor(QMainWindow):
             audio_data = self.audio_recorder.stop()
 
             if audio_data is None:
-                self.show_status_message("Keine Aufnahme vorhanden")
+                self.show_status_message(tr("status_no_recording"))
                 return
 
             self.transcribe_dictation_async(audio_data)
@@ -375,17 +374,17 @@ class MiniEditor(QMainWindow):
         except Exception as error:
             QMessageBox.warning(
                 self,
-                "Diktieren",
-                f"Das Diktat konnte nicht verarbeitet werden:\n{error}",
+                tr("dialog_dictation_title"),
+                tr("error_dictation_process", error=error),
             )
 
 
     def transcribe_dictation_async(self, audio_data) -> None:
         if self.speech_thread is not None and self.speech_thread.isRunning():
-            self.show_status_message("Spracherkennung arbeitet bereits")
+            self.show_status_message(tr("status_speech_already_running"))
             return
 
-        self.show_status_message("Transkribiere Diktat ...")
+        self.show_status_message(tr("status_transcribing_dictation"))
         self.set_speech_buttons_enabled(False)
         self.set_command_input_enabled(False)
 
@@ -417,7 +416,7 @@ class MiniEditor(QMainWindow):
 
         self.show_speech_result(text)
         self.insert_text_at_position(text, self.editor.textCursor().position())
-        self.show_status_message("Diktat eingefügt")
+        self.show_status_message(tr("status_dictation_inserted"))
 
     def on_speech_transcription_failed(self, error_message: str) -> None:
         self.set_speech_buttons_enabled(True)
@@ -427,7 +426,7 @@ class MiniEditor(QMainWindow):
 
         QMessageBox.warning(
             self,
-            "Spracherkennung",
+            tr("dialog_speech_title"),
             error_message,
         )
 
@@ -440,13 +439,13 @@ class MiniEditor(QMainWindow):
     def start_voice_command(self) -> None:
         try:
             self.audio_recorder.start()
-            self.show_status_message("Sprachbefehl-Aufnahme läuft ...")
+            self.show_status_message(tr("status_voice_command_recording"))
         except Exception as error:
             self.voice_command_button.setChecked(False)
             QMessageBox.warning(
                 self,
-                "Sprachbefehl",
-                f"Die Aufnahme konnte nicht gestartet werden:\n{error}",
+                tr("dialog_voice_command_title"),
+                tr("error_recording_start", error=error),
             )
 
 
@@ -455,7 +454,7 @@ class MiniEditor(QMainWindow):
             audio_data = self.audio_recorder.stop()
 
             if audio_data is None:
-                self.show_status_message("Keine Aufnahme vorhanden")
+                self.show_status_message(tr("status_no_recording"))
                 return
 
             self.transcribe_voice_command_async(audio_data)
@@ -463,8 +462,8 @@ class MiniEditor(QMainWindow):
         except Exception as error:
             QMessageBox.warning(
                 self,
-                "Sprachbefehl",
-                f"Der Sprachbefehl konnte nicht verarbeitet werden:\n{error}",
+                tr("dialog_voice_command_title"),
+                tr("error_voice_command_process", error=error),
             )
 
 
@@ -491,10 +490,10 @@ class MiniEditor(QMainWindow):
 
     def transcribe_voice_command_async(self, audio_data) -> None:
         if self.speech_thread is not None and self.speech_thread.isRunning():
-            self.show_status_message("Spracherkennung arbeitet bereits")
+            self.show_status_message(tr("status_speech_already_running"))
             return
 
-        self.show_status_message("Transkribiere Sprachbefehl ...")
+        self.show_status_message(tr("status_transcribing_voice_command"))
         self.set_speech_buttons_enabled(False)
         self.set_command_input_enabled(False)
 
@@ -529,14 +528,22 @@ class MiniEditor(QMainWindow):
         command = self.clean_voice_command_text(text)
 
         if not command:
-            self.show_status_message("Kein Sprachbefehl erkannt")
+            self.show_status_message(tr("status_no_voice_command"))
             return
 
         self.command_input.setText(command)
         if command != text.strip():
-            self.show_status_message(f"Sprachbefehl erkannt: {text.strip()} → {command}")
+            self.show_status_message(
+                tr(
+                    "status_voice_command_corrected",
+                    original=text.strip(),
+                    command=command,
+                )
+            )
         else:
-            self.show_status_message(f"Sprachbefehl erkannt: {command}")
+            self.show_status_message(
+                tr("status_voice_command_recognized", command=command)
+            )
 
         self.command_router.execute(command)
         self.command_input.clear()
@@ -544,23 +551,7 @@ class MiniEditor(QMainWindow):
 
     def apply_voice_command_corrections(self, command: str) -> str:
         normalized = command.strip().lower()
-
-        corrections = {
-            "fett punkt": "fett",
-            "fett ausrufezeichen": "fett",
-            "kursiv punkt": "kursiv",
-            "speichern punkt": "speichern",
-            "öffnen punkt": "öffnen",
-            "oeffnen": "öffnen",
-            "rückgängig punkt": "rückgängig",
-            "rueckgängig": "rückgängig",
-            "rueckgaengig": "rückgängig",
-            "wiederholen punkt": "wiederholen",
-            "alles markieren punkt": "alles markieren",
-            "neue zeile punkt": "neue zeile",
-            "ki status punkt": "ki status",
-            "ollama test punkt": "ollama test",
-        }
+        corrections = voice_command_corrections()
 
         return corrections.get(normalized, command)
 
@@ -588,9 +579,13 @@ class MiniEditor(QMainWindow):
 
     def show_speech_result(self, text: str) -> None:
         if text:
-            self.speech_result_label.setText(f"Erkannte Sprache: {text}")
+            self.speech_result_label.setText(
+                tr("speech_result_text", text=text)
+            )
         else:
-            self.speech_result_label.setText("Erkannte Sprache: -")
+            self.speech_result_label.setText(
+                tr("speech_result_empty")
+            )
 
 
     def show_status_message(self, message: str, timeout: int = 3000) -> None:
@@ -599,7 +594,7 @@ class MiniEditor(QMainWindow):
         if timeout > 0:
             QTimer.singleShot(
                 timeout,
-                lambda: self.status_label.setText("Bereit")
+                lambda: self.status_label.setText(tr("status_ready"))
             )
 
 
@@ -621,8 +616,8 @@ class MiniEditor(QMainWindow):
 
         result = QMessageBox.question(
             self,
-            "Änderungen speichern?",
-            "Das Dokument wurde geändert. Möchtest du die Änderungen speichern?",
+            tr("dialog_save_changes_title"),
+            tr("dialog_save_changes_text"),
             QMessageBox.StandardButton.Save
             | QMessageBox.StandardButton.Discard
             | QMessageBox.StandardButton.Cancel,
@@ -641,8 +636,8 @@ class MiniEditor(QMainWindow):
         if self.llm_thread is not None and self.llm_thread.isRunning():
             QMessageBox.information(
                 self,
-                "KI arbeitet noch",
-                "Bitte warte, bis die KI-Aktion abgeschlossen ist.",
+                tr("dialog_ai_busy_title"),
+                tr("dialog_ai_busy_text"),
             )
             event.ignore()
             return
@@ -650,8 +645,8 @@ class MiniEditor(QMainWindow):
         if self.speech_thread is not None and self.speech_thread.isRunning():
             QMessageBox.information(
                 self,
-                "Spracherkennung arbeitet noch",
-                "Bitte warte, bis die Transkription abgeschlossen ist.",
+                tr("dialog_speech_busy_title"),
+                tr("dialog_speech_busy_text"),
             )
             event.ignore()
             return
@@ -787,7 +782,9 @@ class MiniEditor(QMainWindow):
                 break
 
         if matching_family is None:
-            self.show_status_message(f"Schriftart nicht gefunden: {family}")
+            self.show_status_message(
+                tr("status_font_not_found", family=family)
+            )
             return False
 
         fmt = QTextCharFormat()
@@ -807,16 +804,17 @@ class MiniEditor(QMainWindow):
 
     def find_text(self, search_text: str) -> bool:
         if not search_text:
-            self.show_status_message("Kein Suchtext angegeben")
+            self.show_status_message(tr("status_no_search_text"))
             return False
 
         found = self.editor.find(search_text)
 
         if found:
-            self.show_status_message(f"Gefunden: {search_text}")
+            self.show_status_message(
+                tr("status_found_text", text=search_text)
+            )
             return True
 
-        # Wenn ab Cursorposition nichts gefunden wurde, von vorne suchen
         cursor = self.editor.textCursor()
         cursor.movePosition(cursor.MoveOperation.Start)
         self.editor.setTextCursor(cursor)
@@ -824,28 +822,32 @@ class MiniEditor(QMainWindow):
         found = self.editor.find(search_text)
 
         if found:
-            self.show_status_message(f"Gefunden ab Dokumentanfang: {search_text}")
+            self.show_status_message(
+                tr("status_found_text_from_start", text=search_text)
+            )
             return True
 
-        self.show_status_message(f"Nicht gefunden: {search_text}")
+        self.show_status_message(
+            tr("status_text_not_found", text=search_text)
+        )
         return False
+
 
     def replace_selection(self, replacement_text: str) -> bool:
         cursor = self.editor.textCursor()
 
         if not cursor.hasSelection():
-            self.show_status_message("Keine Auswahl zum Ersetzen vorhanden")
+            self.show_status_message(tr("status_no_selection_to_replace"))
             return False
 
         cursor.insertText(replacement_text)
-        self.show_status_message("Auswahl ersetzt")
+        self.show_status_message(tr("status_selection_replaced"))
         return True
 
 
     def replace_next_text(self, search_text: str, replacement_text: str) -> bool:
         if not search_text:
-            self.show_status_message("Kein Suchtext angegeben")
-            return False
+            self.show_status_message(tr("status_no_search_text"))
 
         found = self.editor.find(search_text)
 
@@ -857,14 +859,20 @@ class MiniEditor(QMainWindow):
             found = self.editor.find(search_text)
 
         if not found:
-            self.show_status_message(f"Nicht gefunden: {search_text}")
+            self.show_status_message(
+                tr("status_text_not_found", text=search_text)
+            )
             return False
 
         cursor = self.editor.textCursor()
         cursor.insertText(replacement_text)
 
         self.show_status_message(
-            f"Ersetzt: {search_text} → {replacement_text}"
+            tr(
+                "status_replaced_text",
+                search_text=search_text,
+                replacement_text=replacement_text,
+            )
         )
         return True
 
@@ -930,13 +938,13 @@ class MiniEditor(QMainWindow):
 
     def generate_text_async(self, llm_client, prompt: str) -> None:
         if self.llm_thread is not None and self.llm_thread.isRunning():
-            self.show_status_message("Die KI arbeitet bereits")
+            self.show_status_message(tr("status_ai_already_working"))
             return
 
         current_cursor = self.editor.textCursor()
         insert_position = current_cursor.position()
 
-        self.show_status_message("KI generiert Text ...")
+        self.show_status_message(tr("status_ai_generating"))
         self.set_command_input_enabled(False)
 
         self.llm_thread = QThread()
@@ -974,30 +982,37 @@ class MiniEditor(QMainWindow):
 
         if mode == "generate":
             self.insert_generated_text_as_paragraph(generated_text, start_position)
-            self.show_status_message("KI-Text eingefügt")
+            self.show_status_message(tr("status_ai_text_inserted"))
 
         elif mode == "continue":
             self.insert_text_at_position(generated_text, start_position)
-            self.show_status_message("KI-Fortsetzung eingefügt")
+            self.show_status_message(tr("status_ai_continuation_inserted"))
 
         elif mode == "transform":
             self.replace_text_range(generated_text, start_position, end_position)
-            self.show_status_message("KI-Auswahl ersetzt")
+            self.show_status_message(tr("status_ai_selection_replaced"))
 
         else:
-            self.show_status_message(f"Unbekannter KI-Modus: {mode}")
+            self.show_status_message(
+                tr("status_unknown_ai_mode", mode=mode)
+            )
 
 
     def on_llm_generation_failed(self, error_message: str) -> None:
         self.set_command_input_enabled(True)
 
-        clean_message = error_message.replace("[Fehler]", "").strip()
+        clean_message = (
+            error_message
+            .replace("[Fehler]", "")
+            .replace("[Error]", "")
+            .strip()
+        )
 
-        self.show_status_message("KI-Fehler")
+        self.show_status_message(tr("status_ai_error"))
 
         QMessageBox.warning(
             self,
-            "KI-Fehler",
+            tr("dialog_ai_error_title"),
             clean_message,
         )
 
@@ -1009,20 +1024,20 @@ class MiniEditor(QMainWindow):
 
     def transform_selection_async(self, llm_client, instruction: str) -> None:
         if self.llm_thread is not None and self.llm_thread.isRunning():
-            self.show_status_message("Die KI arbeitet bereits")
+            self.show_status_message(tr("status_ai_already_working"))
             return
 
         cursor = self.editor.textCursor()
 
         if not cursor.hasSelection():
-            self.show_status_message("Bitte zuerst Text markieren")
+            self.show_status_message(tr("status_no_selection_for_ai"))
             return
 
         selection_start = cursor.selectionStart()
         selection_end = cursor.selectionEnd()
         selected_text = cursor.selectedText().replace("\u2029", "\n")
 
-        self.show_status_message("KI bearbeitet Auswahl ...")
+        self.show_status_message(tr("status_ai_transforming_selection"))
         self.set_command_input_enabled(False)
 
         self.llm_thread = QThread()
@@ -1080,19 +1095,19 @@ class MiniEditor(QMainWindow):
 
     def continue_text_async(self, llm_client) -> None:
         if self.llm_thread is not None and self.llm_thread.isRunning():
-            self.show_status_message("Die KI arbeitet bereits")
+            self.show_status_message(tr("status_ai_already_working"))
             return
 
         context_text = self.get_text_before_cursor()
 
         if not context_text:
-            self.show_status_message("Kein Kontext vor dem Cursor vorhanden")
+            self.show_status_message(tr("context_missing"))
             return
 
         current_cursor = self.editor.textCursor()
         insert_position = current_cursor.position()
 
-        self.show_status_message("KI schreibt weiter ...")
+        self.show_status_message(tr("status_ai_continuing"))
         self.set_command_input_enabled(False)
 
         self.llm_thread = QThread()
@@ -1134,40 +1149,49 @@ class MiniEditor(QMainWindow):
 
     def show_ai_status(self) -> None:
         settings = load_settings()
-        settings_path = get_settings_path()
+
+        fake_mode_text = (
+            tr("ai_status_yes")
+            if settings["use_fake_llm"]
+            else tr("ai_status_no")
+        )
 
         message = (
-            f"Settings-Datei:\n{settings_path}\n\n"
+            f"{tr('ai_status_settings_path')}:\n"
+            f"{get_settings_path()}\n\n"
 
-            f"Ollama / Qwen:\n"
-            f"  Modell: {settings['ollama_model_name']}\n"
-            f"  Ollama-Adresse: {settings['ollama_base_url']}\n"
-            f"  Fake-Modus: {settings['use_fake_llm']}\n"
-            f"  Timeout: {settings['llm_timeout_seconds']} Sekunden\n\n"
+            f"{tr('ai_status_ollama')}:\n"
+            f"{tr('ai_status_base_url')}: {settings['ollama_base_url']}\n"
+            f"{tr('ai_status_model')}: {settings['ollama_model_name']}\n"
+            f"{tr('ai_status_timeout')}: {settings['llm_timeout_seconds']} s\n"
+            f"{tr('ai_status_fake_mode')}: {fake_mode_text}\n\n"
 
-            f"Generierung:\n"
-            f"  Temperature: {settings['generate_temperature']}\n"
-            f"  Num predict: {settings['generate_num_predict']}\n\n"
+            f"{tr('ai_status_generation')}:\n"
+            f"{tr('ai_status_temperature')}: {settings['generate_temperature']}\n"
+            f"{tr('ai_status_num_predict')}: {settings['generate_num_predict']} {tr('unit_tokens')}\n\n"
 
-            f"Transformation:\n"
-            f"  Temperature: {settings['transform_temperature']}\n"
-            f"  Num predict: {settings['transform_num_predict']}\n\n"
+            f"{tr('ai_status_transform')}:\n"
+            f"{tr('ai_status_temperature')}: {settings['transform_temperature']}\n"
+            f"{tr('ai_status_num_predict')}: {settings['transform_num_predict']} {tr('unit_tokens')}\n\n"
 
-            f"Fortsetzung:\n"
-            f"  Temperature: {settings['continue_temperature']}\n"
-            f"  Num predict: {settings['continue_num_predict']}\n\n"
+            f"{tr('ai_status_continue')}:\n"
+            f"{tr('ai_status_temperature')}: {settings['continue_temperature']}\n"
+            f"{tr('ai_status_num_predict')}: {settings['continue_num_predict']} {tr('unit_tokens')}\n\n"
 
-            f"Spracherkennung / Whisper:\n"
-            f"  Modell: {settings['speech_model_size']}\n"
-            f"  Sample Rate: {settings['speech_sample_rate']} Hz\n"
-            f"  Device: {settings['speech_device']}\n"
-            f"  Compute Type: {settings['speech_compute_type']}\n"
-            f"  Beam Size: {settings['speech_beam_size']}"
+            f"{tr('ai_status_speech')}:\n"
+            f"{tr('ai_status_speech_model')}: {settings['speech_model_size']}\n"
+            f"{tr('ai_status_sample_rate')}: {settings['speech_sample_rate']} Hz\n"
+            f"{tr('ai_status_device')}: {settings['speech_device']}\n"
+            f"{tr('ai_status_compute_type')}: {settings['speech_compute_type']}\n"
+            f"{tr('ai_status_beam_size')}: {settings['speech_beam_size']}\n\n"
+
+            f"{tr('ai_status_interface_language')}: {settings['interface_language']}\n"
+            f"{tr('ai_status_text_language')}: {settings['text_generation_language']}"
         )
 
         QMessageBox.information(
             self,
-            "Systemstatus",
+            tr("dialog_ai_status_title"),
             message,
         )
 
@@ -1178,24 +1202,31 @@ class MiniEditor(QMainWindow):
         models_text = "\n".join(status["models"])
 
         if not models_text:
-            models_text = "(keine Modelle gefunden)"
+            models_text = tr("ollama_test_no_models")
+
+        availability_text = (
+            tr("ollama_test_success_status")
+            if status["ok"]
+            else tr("ollama_test_failure_status")
+        )
 
         message = (
+            f"{availability_text}\n\n"
             f"{status['message']}\n\n"
-            f"Gefundene Modelle:\n"
+            f"{tr('ollama_test_models')}:\n"
             f"{models_text}"
         )
 
         if status["ok"]:
             QMessageBox.information(
                 self,
-                "Ollama-Test",
+                tr("dialog_ollama_test_title"),
                 message,
             )
         else:
             QMessageBox.warning(
                 self,
-                "Ollama-Test",
+                tr("dialog_ollama_test_title"),
                 message,
             )
 
@@ -1204,10 +1235,11 @@ class MiniEditor(QMainWindow):
         dialog = SettingsDialog(self)
 
         if dialog.exec() == dialog.DialogCode.Accepted:
-            self.command_router.llm_client = LlmClient()
+            self.command_router = CommandRouter(self)
             self.reload_speech_settings()
             self.apply_ui_settings()
-            self.show_status_message("Einstellungen gespeichert")
+            self.refresh_translations()
+            self.show_status_message(tr("status_settings_saved"))
 
 
     def apply_ui_settings(self) -> None:
@@ -1216,3 +1248,37 @@ class MiniEditor(QMainWindow):
 
         self.command_label.setVisible(show_command_input)
         self.command_input.setVisible(show_command_input)
+
+
+    def refresh_translations(self) -> None:
+        self.update_window_title()
+
+        self.new_action.setText(tr("action_new"))
+        self.open_action.setText(tr("action_open"))
+        self.save_action.setText(tr("action_save"))
+        self.save_as_action.setText(tr("action_save_as"))
+        self.exit_action.setText(tr("action_exit"))
+        self.settings_action.setText(tr("action_settings"))
+
+        self.menuBar().clear()
+        self._create_menus()
+
+        if self.dictation_button.isChecked():
+            self.dictation_button.setText(tr("button_dictation_stop"))
+        else:
+            self.dictation_button.setText(tr("button_dictation_start"))
+
+        if self.voice_command_button.isChecked():
+            self.voice_command_button.setText(tr("button_voice_command_stop"))
+        else:
+            self.voice_command_button.setText(tr("button_voice_command_start"))
+
+        self.dictation_button.setToolTip(tr("tooltip_dictation"))
+        self.voice_command_button.setToolTip(tr("tooltip_voice_command"))
+
+        self.command_label.setText(tr("command_label"))
+        self.command_input.setPlaceholderText(tr("command_placeholder"))
+
+        self.show_speech_result("")
+
+        self.status_label.setText(tr("status_ready"))

@@ -1,4 +1,5 @@
 from PySide6.QtCore import QObject, Signal, Slot
+from app.localization import llm_worker_message
 
 
 class LlmWorker(QObject):
@@ -24,7 +25,11 @@ class LlmWorker(QObject):
 
 
     def is_error_text(self, text: str) -> bool:
-        return text.strip().startswith("[Fehler]")
+        stripped_text = text.strip()
+        return (
+            stripped_text.startswith("[Fehler]")
+            or stripped_text.startswith("[Error]")
+        )
 
 
     @Slot()
@@ -40,7 +45,7 @@ class LlmWorker(QObject):
 
             elif self.mode == "transform":
                 if not self.selected_text:
-                    self.failed.emit("Keine Auswahl für KI-Bearbeitung vorhanden.")
+                    self.failed.emit(llm_worker_message("no_selection"))
                     return
 
                 result_text = self.llm_client.transform_text(
@@ -50,11 +55,13 @@ class LlmWorker(QObject):
                 end_position = self.selection_end or self.insert_position
 
             else:
-                self.failed.emit(f"Unbekannter KI-Modus: {self.mode}")
+                self.failed.emit(
+                    llm_worker_message("unknown_mode", mode=self.mode)
+                )
                 return
 
             if not result_text.strip():
-                self.failed.emit("Die KI hat keinen Text zurückgegeben.")
+                self.failed.emit(llm_worker_message("empty_response"))
                 return
 
             if self.is_error_text(result_text):
@@ -69,4 +76,6 @@ class LlmWorker(QObject):
             )
 
         except Exception as error:
-            self.failed.emit(f"KI-Fehler: {error}")
+            self.failed.emit(
+                llm_worker_message("worker_error", error=error)
+            )

@@ -1,4 +1,5 @@
 from PySide6.QtCore import QObject, Signal, Slot
+from app.localization import speech_message
 
 
 class SpeechWorker(QObject):
@@ -18,7 +19,7 @@ class SpeechWorker(QObject):
             if text.strip():
                 self.finished.emit(text)
             else:
-                self.failed.emit("Kein Text erkannt.")
+                self.failed.emit(speech_message("no_text_recognized"))
 
         except Exception as error:
-            self.failed.emit(f"Transkriptionsfehler: {error}")
+            self.failed.emit(speech_message("transcription_error", error=error))

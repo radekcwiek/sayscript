@@ -3,6 +3,7 @@ from typing import Any
 from app.llm_client import LlmClient
 import re
 from difflib import SequenceMatcher
+from app.localization import get_command_language_module, command_message
 
 
 @dataclass
@@ -17,200 +18,8 @@ class CommandRouter:
         self.editor = editor_window.editor
         self.llm_client = LlmClient()
 
-        self.command_aliases = {
-            "bold": {
-                "fett",
-                "mach fett",
-                "text fett",
-                "markierung fett",
-                "fett formatieren",
-                "auswahl fett",
-            },
-            "italic": {
-                "kursiv",
-                "mach kursiv",
-                "text kursiv",
-                "markierung kursiv",
-                "kursiv formatieren",
-                "auswahl kursiv",
-            },
-            "delete_selection": {
-                "lösche auswahl",
-                "auswahl löschen",
-                "markierung löschen",
-                "lösche markierung",
-                "entferne auswahl",
-                "entferne markierung",
-            },
-            "select_all": {
-                "alles markieren",
-                "gesamten text markieren",
-                "markiere alles",
-                "alles auswählen",
-            },
-            "new_line": {
-                "neue zeile",
-                "zeilenumbruch",
-                "neuen absatz",
-                "absatz",
-            },
-            "undo": {
-                "rückgängig",
-                "mach rückgängig",
-                "letzte aktion rückgängig",
-                "undo",
-            },
-            "redo": {
-                "wiederholen",
-                "wiederherstellen",
-                "redo",
-            },
-            "cut": {
-                "ausschneiden",
-                "auswahl ausschneiden",
-                "markierung ausschneiden",
-            },
-            "copy": {
-                "kopieren",
-                "auswahl kopieren",
-                "markierung kopieren",
-            },
-            "paste": {
-                "einfügen",
-                "aus zwischenablage einfügen",
-                "text einfügen",
-            },
-            "save": {
-                "speichern",
-                "datei speichern",
-                "dokument speichern",
-            },
-            "open": {
-                "öffnen",
-                "datei öffnen",
-                "dokument öffnen",
-            },
-            "new_file": {
-                "neu",
-                "neue datei",
-                "neues dokument",
-                "dokument neu",
-            },
-            "heading_1": {
-                "überschrift 1",
-                "überschrift eins",
-                "hauptüberschrift",
-                "titel",
-                "mache überschrift 1",
-                "mach überschrift 1",
-            },
-            "heading_2": {
-                "überschrift 2",
-                "überschrift zwei",
-                "unterüberschrift",
-                "mache überschrift 2",
-                "mach überschrift 2",
-            },
-            "normal_text": {
-                "normaler text",
-                "normaltext",
-                "standard text",
-                "standardtext",
-                "text normal",
-                "normale schrift",
-            },
-            "align_left": {
-                "linksbündig",
-                "links ausrichten",
-                "text links",
-                "linke ausrichtung",
-            },
-            "align_center": {
-                "zentrieren",
-                "zentriert",
-                "mittig",
-                "text zentrieren",
-                "zentriert ausrichten",
-            },
-            "align_right": {
-                "rechtsbündig",
-                "rechts ausrichten",
-                "text rechts",
-                "rechte ausrichtung",
-            },
-            "bullet_list": {
-                "liste",
-                "aufzählung",
-                "aufzählungsliste",
-                "punktliste",
-                "liste mit punkten",
-            },
-            "numbered_list": {
-                "nummerierte liste",
-                "nummerierung",
-                "zahlenliste",
-                "liste mit zahlen",
-            },
-            "indent": {
-                "einrücken",
-                "text einrücken",
-                "absatz einrücken",
-                "rücke ein",
-            },
-            "outdent": {
-                "ausrücken",
-                "text ausrücken",
-                "absatz ausrücken",
-                "rücke aus",
-            },
-            "continue_text": {
-                "schreibe weiter",
-                "schreib weiter",
-                "weiter schreiben",
-                "text fortsetzen",
-                "fortsetzen",
-                "führe fort",
-                "fuehre fort",
-            },
-            "remove_list": {
-                "liste entfernen",
-                "liste löschen",
-                "keine liste",
-                "aufzählung entfernen",
-                "nummerierung entfernen",
-                "listenformat entfernen",
-                "zurück zu text",
-            },
-            "ai_status": {
-                "ki status",
-                "ki-status",
-                "ai status",
-                "modell status",
-                "ollama status",
-                "zeige ki status",
-                "systemstatus",
-                "system status",
-                "status",
-                "spracherkennung status",
-                "whisper status",
-            },
-            "ollama_test": {
-                "ollama test",
-                "ki test",
-                "ai test",
-                "modell test",
-                "teste ollama",
-                "teste ki",
-            },
-            "open_settings_dialog": {
-                "einstellungen",
-                "einstellungen öffnen",
-                "settings",
-                "settings öffnen",
-                "konfiguration",
-                "konfiguration öffnen",
-            },
-        }
+        self.language = get_command_language_module()
+        self.command_aliases = self.language.COMMAND_ALIASES
 
 
     def execute(self, command: str) -> None:
@@ -231,6 +40,10 @@ class CommandRouter:
 
     def normalize_command(self, command: str) -> str:
         return " ".join(command.strip().lower().split())
+
+
+    def msg(self, key: str, **kwargs) -> str:
+        return command_message(key, **kwargs)
 
 
     def get_action(self, command: str) -> str | None:
@@ -255,7 +68,7 @@ class CommandRouter:
 
     def show_unknown_command(self, command: str) -> None:
         self.editor_window.show_status_message(
-            f"Unbekannter Befehl: {command}"
+            self.msg("unknown_command", command=command)
         )
 
 
@@ -340,7 +153,11 @@ class CommandRouter:
             score = value["score"]
 
             self.editor_window.show_status_message(
-                f"Befehl korrigiert: {original} → {corrected_alias}"
+                self.msg(
+                    "command_corrected",
+                    original=original,
+                    alias=corrected_alias,
+                )
             )
 
             self.run_command(ParsedCommand(corrected_action))
@@ -348,121 +165,121 @@ class CommandRouter:
 
         if action == "bold":
             self.editor_window.toggle_bold()
-            self.editor_window.show_status_message("Befehl ausgeführt: fett")
+            self.editor_window.show_status_message(self.msg("executed_bold"))
 
         elif action == "italic":
             self.editor_window.toggle_italic()
-            self.editor_window.show_status_message("Befehl ausgeführt: kursiv")
+            self.editor_window.show_status_message(self.msg("executed_italic"))
 
         elif action == "delete_selection":
             self.delete_selection()
-            self.editor_window.show_status_message("Befehl ausgeführt: Auswahl gelöscht")
+            self.editor_window.show_status_message(self.msg("executed_delete_selection"))
 
         elif action == "select_all":
             self.editor.selectAll()
-            self.editor_window.show_status_message("Befehl ausgeführt: alles markiert")
+            self.editor_window.show_status_message(self.msg("executed_select_all"))
 
         elif action == "new_line":
             self.insert_new_line()
-            self.editor_window.show_status_message("Befehl ausgeführt: neue Zeile")
+            self.editor_window.show_status_message(self.msg("executed_new_line"))
 
         elif action == "undo":
             self.editor.undo()
-            self.editor_window.show_status_message("Befehl ausgeführt: rückgängig")
+            self.editor_window.show_status_message(self.msg("executed_undo"))
 
         elif action == "redo":
             self.editor.redo()
-            self.editor_window.show_status_message("Befehl ausgeführt: wiederholen")
+            self.editor_window.show_status_message(self.msg("executed_redo"))
 
         elif action == "cut":
             self.editor.cut()
-            self.editor_window.show_status_message("Befehl ausgeführt: ausschneiden")
+            self.editor_window.show_status_message(self.msg("executed_cut"))
 
         elif action == "copy":
             self.editor.copy()
-            self.editor_window.show_status_message("Befehl ausgeführt: kopieren")
+            self.editor_window.show_status_message(self.msg("executed_copy"))
 
         elif action == "paste":
             self.editor.paste()
-            self.editor_window.show_status_message("Befehl ausgeführt: einfügen")
+            self.editor_window.show_status_message(self.msg("executed_paste"))
 
         elif action == "save":
             if self.editor_window.save_file():
-                self.editor_window.show_status_message("Befehl ausgeführt: speichern")
+                self.editor_window.show_status_message(self.msg("executed_save"))
             else:
-                self.editor_window.show_status_message("Speichern abgebrochen")
+                self.editor_window.show_status_message(self.msg("save_cancelled"))
 
         elif action == "open":
             if self.editor_window.open_file():
-                self.editor_window.show_status_message("Befehl ausgeführt: öffnen")
+                self.editor_window.show_status_message(self.msg("executed_open"))
             else:
-                self.editor_window.show_status_message("Öffnen abgebrochen")
+                self.editor_window.show_status_message(self.msg("open_cancelled"))
 
         elif action == "new_file":
             if self.editor_window.new_file():
-                self.editor_window.show_status_message("Befehl ausgeführt: neue Datei")
+                self.editor_window.show_status_message(self.msg("executed_new_file"))
             else:
-                self.editor_window.show_status_message("Neue Datei abgebrochen")
+                self.editor_window.show_status_message(self.msg("new_file_cancelled"))
 
         elif action == "heading_1":
             self.editor_window.set_heading(1)
-            self.editor_window.show_status_message("Befehl ausgeführt: Überschrift 1")
+            self.editor_window.show_status_message(self.msg("executed_heading_1"))
 
         elif action == "heading_2":
             self.editor_window.set_heading(2)
-            self.editor_window.show_status_message("Befehl ausgeführt: Überschrift 2")
+            self.editor_window.show_status_message(self.msg("executed_heading_2"))
 
         elif action == "normal_text":
             self.editor_window.set_normal_text()
-            self.editor_window.show_status_message("Befehl ausgeführt: normaler Text")
+            self.editor_window.show_status_message(self.msg("executed_normal_text"))
 
         elif action == "align_left":
             self.editor_window.align_left()
-            self.editor_window.show_status_message("Befehl ausgeführt: linksbündig")
+            self.editor_window.show_status_message(self.msg("executed_align_left"))
 
         elif action == "align_center":
             self.editor_window.align_center()
-            self.editor_window.show_status_message("Befehl ausgeführt: zentriert")
+            self.editor_window.show_status_message(self.msg("executed_align_center"))
 
         elif action == "align_right":
             self.editor_window.align_right()
-            self.editor_window.show_status_message("Befehl ausgeführt: rechtsbündig")
+            self.editor_window.show_status_message(self.msg("executed_align_right"))
 
         elif action == "bullet_list":
             self.editor_window.toggle_bullet_list()
-            self.editor_window.show_status_message("Befehl ausgeführt: Liste")
+            self.editor_window.show_status_message(self.msg("executed_bullet_list"))
 
         elif action == "numbered_list":
             self.editor_window.toggle_numbered_list()
-            self.editor_window.show_status_message("Befehl ausgeführt: nummerierte Liste")
+            self.editor_window.show_status_message(self.msg("executed_numbered_list"))
 
         elif action == "remove_list":
             self.editor_window.remove_list_format()
-            self.editor_window.show_status_message("Befehl ausgeführt: Liste entfernt")
+            self.editor_window.show_status_message(self.msg("executed_remove_list"))
 
         elif action == "indent":
             self.editor_window.indent_text()
-            self.editor_window.show_status_message("Befehl ausgeführt: einrücken")
+            self.editor_window.show_status_message(self.msg("executed_indent"))
 
         elif action == "outdent":
             self.editor_window.outdent_text()
-            self.editor_window.show_status_message("Befehl ausgeführt: ausrücken")
+            self.editor_window.show_status_message(self.msg("executed_outdent"))
 
         elif action == "font_size":
             self.editor_window.set_font_size(value)
             self.editor_window.show_status_message(
-                f"Befehl ausgeführt: Schriftgröße {value}"
+                self.msg("executed_font_size", value=value)
             )
 
         elif action == "font_family":
             if self.editor_window.set_font_family(value):
                 self.editor_window.show_status_message(
-                    f"Befehl ausgeführt: Schriftart {value}"
+                    self.msg("executed_font_family", value=value)
                 )
 
         elif action == "insert_text":
             self.editor_window.insert_text(value)
-            self.editor_window.show_status_message("Befehl ausgeführt: Text eingefügt")
+            self.editor_window.show_status_message(self.msg("executed_insert_text"))
 
         elif action == "search_text":
             self.editor_window.find_text(value)
@@ -497,14 +314,7 @@ class CommandRouter:
 
 
     def parse_font_size(self, command: str) -> int | None:
-        prefixes = {
-            "schriftgröße",
-            "schriftgroesse",
-            "schrift größe",
-            "schrift groesse",
-            "größe",
-            "groesse",
-        }
+        prefixes = self.language.FONT_SIZE_PREFIXES
 
         for prefix in prefixes:
             if command.startswith(prefix + " "):
@@ -517,7 +327,7 @@ class CommandRouter:
                         return size
 
                     self.editor_window.show_status_message(
-                        "Schriftgröße muss zwischen 6 und 96 liegen"
+                        self.msg("font_size_out_of_range")
                     )
                     return None
 
@@ -529,12 +339,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> str | None:
-        prefixes = {
-            "schriftart",
-            "schrift",
-            "font",
-            "font family",
-        }
+        prefixes = self.language.FONT_FAMILY_PREFIXES
 
         family = self.extract_argument_after_prefix(
             original_command,
@@ -553,14 +358,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> str | None:
-        prefixes = {
-            "füge ein",
-            "fuege ein",
-            "einfügen",
-            "einfuegen",
-            "text einfügen",
-            "text einfuegen",
-        }
+        prefixes = self.language.INSERT_TEXT_PREFIXES
 
         text = self.extract_argument_after_prefix(
             original_command,
@@ -578,14 +376,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> str | None:
-        prefixes = {
-            "suche nach",
-            "suche",
-            "finde",
-            "find",
-            "search",
-            "search for",
-        }
+        prefixes = self.language.SEARCH_TEXT_PREFIXES
 
         text = self.extract_argument_after_prefix(
             original_command,
@@ -604,14 +395,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> str | None:
-        prefixes = {
-            "ersetze auswahl durch",
-            "ersetze markierung durch",
-            "ersetze selektion durch",
-            "ersetze durch",
-            "auswahl ersetzen durch",
-            "markierung ersetzen durch",
-        }
+        prefixes = self.language.REPLACE_SELECTION_PREFIXES
 
         text = self.extract_argument_after_prefix(
             original_command,
@@ -656,11 +440,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> tuple[str, str] | None:
-        prefixes = {
-            "ersetze",
-            "ersetze nächstes",
-            "ersetze naechstes",
-        }
+        prefixes = self.language.REPLACE_TEXT_PREFIXES
 
         for prefix in prefixes:
             argument = self.extract_argument_after_prefix(
@@ -672,13 +452,23 @@ class CommandRouter:
             if argument is None:
                 continue
 
-            parts = re.split(r"\s+durch\s+", argument, maxsplit=1, flags=re.IGNORECASE)
+            separators = "|".join(
+                re.escape(separator)
+                for separator in self.language.REPLACE_TEXT_SEPARATORS
+            )
 
-            if len(parts) != 2:
+            parts = re.split(
+                rf"\s+({separators})\s+",
+                argument,
+                maxsplit=1,
+                flags=re.IGNORECASE,
+            )
+
+            if len(parts) != 3:
                 return None
 
             search_text = parts[0].strip()
-            replacement_text = parts[1].strip()
+            replacement_text = parts[2].strip()
 
             if search_text and replacement_text:
                 return search_text, replacement_text
@@ -691,17 +481,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> str | None:
-        prefixes = {
-            "generiere",
-            "erzeuge",
-            "erstelle",
-            "verfasse",
-            "schreibe einen text über",
-            "schreibe einen absatz über",
-            "schreibe eine einleitung zu",
-            "schreib einen text über",
-            "schreib einen absatz über",
-        }
+        prefixes = self.language.GENERATE_TEXT_PREFIXES
 
         prompt = self.extract_argument_after_prefix(
             original_command,
@@ -720,33 +500,7 @@ class CommandRouter:
         original_command: str,
         normalized_command: str,
     ) -> str | None:
-        fixed_instructions = {
-            "mach das höflicher": "Formuliere den Text höflicher.",
-            "mache das höflicher": "Formuliere den Text höflicher.",
-            "höflicher": "Formuliere den Text höflicher.",
-            "mach das kürzer": "Kürze den Text deutlich.",
-            "mache das kürzer": "Kürze den Text deutlich.",
-            "kürzer": "Kürze den Text deutlich.",
-            "mach das sachlicher": "Formuliere den Text sachlicher.",
-            "mache das sachlicher": "Formuliere den Text sachlicher.",
-            "sachlicher": "Formuliere den Text sachlicher.",
-            "korrigiere das": "Korrigiere Rechtschreibung und Grammatik.",
-            "korrigieren": "Korrigiere Rechtschreibung und Grammatik.",
-            "fasse das zusammen": "Fasse den Text knapp zusammen.",
-            "zusammenfassen": "Fasse den Text knapp zusammen.",
-        }
-
-        if normalized_command in fixed_instructions:
-            return fixed_instructions[normalized_command]
-
-        prefixes = {
-            "überarbeite auswahl",
-            "ueberarbeite auswahl",
-            "überarbeite markierung",
-            "ueberarbeite markierung",
-            "bearbeite auswahl",
-            "bearbeite markierung",
-        }
+        prefixes = self.language.TRANSFORM_SELECTION_PREFIXES
 
         instruction = self.extract_argument_after_prefix(
             original_command,
@@ -754,10 +508,13 @@ class CommandRouter:
             prefixes,
         )
 
-        if instruction:
-            return instruction
+        if instruction is None:
+            return None
 
-        return None
+        if instruction.strip():
+            return instruction.strip()
+
+        return original_command.strip()
 
 
     def get_fuzzy_action(self, command: str) -> tuple[str, str, float] | None:
