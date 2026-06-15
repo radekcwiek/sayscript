@@ -153,6 +153,14 @@ TRANSLATIONS = {
         "status_open_cancelled": "Öffnen abgebrochen",
         "status_save_cancelled": "Speichern abgebrochen",
         "status_new_file_cancelled": "Neue Datei abgebrochen",
+        "menu_help": "Hilfe",
+        "action_about": "Über SayScript",
+        "dialog_about_title": "Über SayScript",
+        "about_text": (
+            "{app_name} {app_version}\n\n"
+            "Lokaler KI-Texteditor mit Diktat, Sprachbefehlen und Ollama-Anbindung.\n\n"
+            "Dieses Programm läuft lokal und nutzt lokale Modelle, sofern Ollama entsprechend eingerichtet ist."
+        ),
     },
 
     "en": {
@@ -305,6 +313,14 @@ TRANSLATIONS = {
         "status_open_cancelled": "Open cancelled",
         "status_save_cancelled": "Save cancelled",
         "status_new_file_cancelled": "New file cancelled",
+        "menu_help": "Help",
+        "action_about": "About SayScript",
+        "dialog_about_title": "About SayScript",
+        "about_text": (
+            "{app_name} {app_version}\n\n"
+            "Local AI text editor with dictation, voice commands, and Ollama integration.\n\n"
+            "This program runs locally and uses local models when Ollama is configured accordingly."
+        ),
     },
 }
 

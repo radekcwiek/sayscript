@@ -32,6 +32,7 @@ from app.speech.recorder import AudioRecorder
 from app.speech.transcriber import SpeechTranscriber
 from app.speech.speech_worker import SpeechWorker
 from app.localization import tr, voice_command_corrections
+from app.version import APP_NAME, APP_VERSION
 import os
 import re
 
@@ -217,6 +218,9 @@ class MiniEditor(QMainWindow):
         self.settings_action = QAction(tr("action_settings"), self)
         self.settings_action.triggered.connect(self.open_settings_dialog)
 
+        self.about_action = QAction(tr("action_about"), self)
+        self.about_action.triggered.connect(self.show_about_dialog)
+
         self.export_pdf_action = QAction(tr("action_export_pdf"), self)
         self.export_pdf_action.triggered.connect(self.export_pdf)
 
@@ -239,6 +243,9 @@ class MiniEditor(QMainWindow):
         file_menu.addAction(self.settings_action)
         file_menu.addSeparator()
         file_menu.addAction(self.exit_action)
+
+        help_menu = menu_bar.addMenu(tr("menu_help"))
+        help_menu.addAction(self.about_action)
 
 
     def new_file(self):
@@ -1341,6 +1348,7 @@ class MiniEditor(QMainWindow):
         self.exit_action.setText(tr("action_exit"))
         self.export_pdf_action.setText(tr("action_export_pdf"))
         self.settings_action.setText(tr("action_settings"))
+        self.about_action.setText(tr("action_about"))
 
         self.menuBar().clear()
         self._create_menus()
@@ -1422,3 +1430,15 @@ class MiniEditor(QMainWindow):
                 tr("error_print", error=error),
             )
             return False
+
+
+    def show_about_dialog(self) -> None:
+        QMessageBox.information(
+            self,
+            tr("dialog_about_title"),
+            tr(
+                "about_text",
+                app_name=APP_NAME,
+                app_version=APP_VERSION,
+            ),
+        )
