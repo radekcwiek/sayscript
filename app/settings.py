@@ -1,24 +1,7 @@
-import os
 import json
-from pathlib import Path
 
 from app import config
-
-
-def get_app_dir() -> Path:
-    user_profile = os.getenv("USERPROFILE")
-
-    if user_profile:
-        app_dir = Path(user_profile) / "AppData" / "Local" / "SayScript"
-    else:
-        app_dir = Path.home() / "AppData" / "Local" / "SayScript"
-
-    app_dir.mkdir(parents=True, exist_ok=True)
-    return app_dir
-
-
-def get_settings_path() -> Path:
-    return get_app_dir() / "settings.json"
+from app.platform_paths import ensure_app_dirs, get_settings_path
 
 
 def get_default_settings() -> dict:
@@ -46,6 +29,8 @@ def get_default_settings() -> dict:
 
 
 def load_settings() -> dict:
+    ensure_app_dirs()
+
     settings_path = get_settings_path()
     default_settings = get_default_settings()
 
@@ -64,6 +49,8 @@ def load_settings() -> dict:
 
 
 def save_settings(settings: dict) -> None:
+    ensure_app_dirs()
+
     settings_path = get_settings_path()
 
     with open(settings_path, "w", encoding="utf-8") as file:
