@@ -324,7 +324,7 @@ LLM_PROMPTS = {
     ),
     "transform": (
         "You are a helpful writing assistant inside a local word processor "
-        "called Dictator.\n\n"
+        "called SayScript.\n\n"
         "Edit the following text according to the instruction. "
         "Return only the revised text. "
         "No comments, no explanations, no Markdown wrapper. "
@@ -334,7 +334,7 @@ LLM_PROMPTS = {
     ),
     "continue": (
         "You are a helpful writing assistant inside a local word processor "
-        "called Dictator.\n\n"
+        "called SayScript.\n\n"
         "Continue the following text in a natural way. "
         "Return only the continuation, not the existing text. "
         "No comments, no explanations, no Markdown wrapper. "
@@ -445,7 +445,7 @@ SETTINGS_DIALOG_TEXTS = {
         "Maximum waiting time for an AI response in seconds."
     ),
     "tooltip_fake_mode": (
-        "When enabled, Dictator uses placeholder responses instead of real AI."
+        "When enabled, SayScript uses placeholder responses instead of real AI."
     ),
     "tooltip_temperature": (
         "Controls the creativity of the response. "
@@ -457,10 +457,10 @@ SETTINGS_DIALOG_TEXTS = {
     ),
     "tooltip_speech_model_size": (
         "Whisper model size. Larger is more accurate, but slower. "
-        "Recommended for Dictator: medium."
+        "Recommended for SayScript: medium."
     ),
     "tooltip_speech_sample_rate": (
-        "Sample rate of the microphone recording. Currently recommended for Dictator: 16000 Hz."
+        "Sample rate of the microphone recording. Currently recommended for SayScript: 16000 Hz."
     ),
     "tooltip_speech_device": (
         "cpu for normal computers, cuda for NVIDIA GPUs."

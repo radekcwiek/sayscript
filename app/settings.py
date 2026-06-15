@@ -9,9 +9,9 @@ def get_app_dir() -> Path:
     user_profile = os.getenv("USERPROFILE")
 
     if user_profile:
-        app_dir = Path(user_profile) / "AppData" / "Local" / "Dictator"
+        app_dir = Path(user_profile) / "AppData" / "Local" / "SayScript"
     else:
-        app_dir = Path.home() / "AppData" / "Local" / "Dictator"
+        app_dir = Path.home() / "AppData" / "Local" / "SayScript"
 
     app_dir.mkdir(parents=True, exist_ok=True)
     return app_dir

@@ -3,7 +3,7 @@ from app.settings import load_settings
 
 TRANSLATIONS = {
     "de": {
-        "window_title_default": "Dictator - Mini Editor",
+        "window_title_default": "SayScript - Editor",
 
         "menu_file": "Datei",
 
@@ -156,7 +156,7 @@ TRANSLATIONS = {
     },
 
     "en": {
-        "window_title_default": "Dictator - Mini Editor",
+        "window_title_default": "SayScript - Editor",
 
         "menu_file": "File",
 

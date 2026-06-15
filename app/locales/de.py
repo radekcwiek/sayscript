@@ -385,7 +385,7 @@ LLM_PROMPTS = {
     ),
     "transform": (
         "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-        "Textverarbeitung namens Dictator.\n\n"
+        "Textverarbeitung namens SayScript.\n\n"
         "Bearbeite den folgenden Text gemäß der Anweisung. "
         "Gib ausschließlich den überarbeiteten Text zurück. "
         "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung. "
@@ -395,7 +395,7 @@ LLM_PROMPTS = {
     ),
     "continue": (
         "Du bist ein hilfreicher Schreibassistent innerhalb einer lokalen "
-        "Textverarbeitung namens Dictator.\n\n"
+        "Textverarbeitung namens SayScript.\n\n"
         "Schreibe den folgenden Text sinnvoll weiter. "
         "Gib nur die Fortsetzung zurück, nicht den bisherigen Text. "
         "Keine Kommentare, keine Erklärungen, keine Markdown-Umrahmung. "
@@ -506,7 +506,7 @@ SETTINGS_DIALOG_TEXTS = {
         "Maximale Wartezeit für eine KI-Antwort in Sekunden."
     ),
     "tooltip_fake_mode": (
-        "Wenn aktiviert, verwendet Dictator Platzhalterantworten statt echter KI."
+        "Wenn aktiviert, verwendet SayScript Platzhalterantworten statt echter KI."
     ),
     "tooltip_temperature": (
         "Steuert die Kreativität der Antwort. "
@@ -518,10 +518,10 @@ SETTINGS_DIALOG_TEXTS = {
     ),
     "tooltip_speech_model_size": (
         "Whisper-Modellgröße. Größer ist genauer, aber langsamer. "
-        "Für Dictator empfohlen: medium."
+        "Für SayScript empfohlen: medium."
     ),
     "tooltip_speech_sample_rate": (
-        "Samplerate der Mikrofonaufnahme. Für Dictator aktuell empfohlen: 16000 Hz."
+        "Samplerate der Mikrofonaufnahme. Für SayScript aktuell empfohlen: 16000 Hz."
     ),
     "tooltip_speech_device": (
         "cpu für normale Rechner, cuda für NVIDIA-GPU."

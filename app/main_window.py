@@ -663,10 +663,10 @@ class MiniEditor(QMainWindow):
 
 
     def update_window_title(self):
-        title = "Dictator - Mini Editor"
+        title = "SayScript - Editor"
 
         if self.current_file:
-            title = f"Dictator - {self.current_file}"
+            title = f"SayScript - {self.current_file}"
 
         if self.editor.document().isModified():
             title += " *"
