@@ -39,6 +39,7 @@ def get_default_settings() -> dict:
         "speech_compute_type": config.SPEECH_COMPUTE_TYPE,
         "speech_beam_size": config.SPEECH_BEAM_SIZE,
         "show_command_input": config.SHOW_COMMAND_INPUT,
+        "show_speech_result": config.SHOW_SPEECH_RESULT,
         "interface_language": config.INTERFACE_LANGUAGE,
         "text_generation_language": config.TEXT_GENERATION_LANGUAGE,
     }

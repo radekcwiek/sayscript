@@ -57,6 +57,14 @@ class SettingsDialog(QDialog):
             self.txt("tooltip_show_command_input")
         )
 
+        self.show_speech_result_checkbox = QCheckBox()
+        self.show_speech_result_checkbox.setChecked(
+            bool(self.settings["show_speech_result"])
+        )
+        self.show_speech_result_checkbox.setToolTip(
+            self.txt("tooltip_show_speech_result")
+        )
+
         self.interface_language_input = QComboBox()
         self.interface_language_input.addItem(self.txt("language_german"), "de")
         self.interface_language_input.addItem(self.txt("language_english"), "en")
@@ -190,6 +198,7 @@ class SettingsDialog(QDialog):
         connection_layout.addRow(self.txt("label_timeout"), self.timeout_input)
         connection_layout.addRow(self.txt("label_fake_mode"), self.fake_llm_checkbox)
         connection_layout.addRow(self.txt("label_show_command_input"), self.show_command_input_checkbox)
+        connection_layout.addRow(self.txt("label_show_speech_result"), self.show_speech_result_checkbox)
         connection_layout.addRow(self.txt("label_interface_language"), self.interface_language_input)
         connection_layout.addRow(self.txt("label_text_generation_language"), self.text_generation_language_input)
         connection_layout.addRow("", self.test_ollama_button)
@@ -266,6 +275,7 @@ class SettingsDialog(QDialog):
         self.settings["speech_compute_type"] = self.speech_compute_type_input.currentText()
         self.settings["speech_beam_size"] = self.speech_beam_size_input.value()
         self.settings["show_command_input"] = self.show_command_input_checkbox.isChecked()
+        self.settings["show_speech_result"] = (self.show_speech_result_checkbox.isChecked())
 
         self.settings["interface_language"] = (
             self.interface_language_input.currentData()

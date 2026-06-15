@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QSizePolicy,
+    QFrame,
 )
 
 from app.command_router import CommandRouter
@@ -62,6 +63,12 @@ class MiniEditor(QMainWindow):
                 border: 1px solid #d7ecff;
                 padding: 48px;
                 font-size: 12pt;
+            }
+            QFrame#separator {
+                background-color: #8ac8ff;
+                border: none;
+                min-height: 1px;
+                max-height: 1px;
             }
         """)
 
@@ -109,20 +116,38 @@ class MiniEditor(QMainWindow):
         self.voice_command_button.toggled.connect(self.toggle_voice_command)
         self.voice_command_button.setToolTip(tr("tooltip_voice_command"))
         speech_button_layout.addWidget(self.voice_command_button)
+        self.speech_buttons_top_separator = self.create_separator()
+        layout.addWidget(self.speech_buttons_top_separator)
 
         layout.addLayout(speech_button_layout)
+
+        self.speech_buttons_bottom_separator = self.create_separator()
+        layout.addWidget(self.speech_buttons_bottom_separator)
+
+        self.speech_top_separator = self.create_separator()
+        layout.addWidget(self.speech_top_separator)
 
         self.speech_result_label = QLabel(tr("speech_result_empty"))
         self.speech_result_label.setWordWrap(True)
         layout.addWidget(self.speech_result_label)
 
+        self.command_top_separator = self.create_separator()
+        layout.addWidget(self.command_top_separator)
+
+        self.command_row_layout = QHBoxLayout()
+
         self.command_label = QLabel(tr("command_label"))
-        layout.addWidget(self.command_label)
+        self.command_row_layout.addWidget(self.command_label)
 
         self.command_input = QLineEdit()
         self.command_input.setPlaceholderText(tr("command_placeholder"))
         self.command_input.returnPressed.connect(self.execute_command)
-        layout.addWidget(self.command_input)
+        self.command_row_layout.addWidget(self.command_input, 1)
+
+        layout.addLayout(self.command_row_layout)
+
+        self.status_top_separator = self.create_separator()
+        layout.addWidget(self.status_top_separator)
 
         self.apply_ui_settings()
 
@@ -153,21 +178,23 @@ class MiniEditor(QMainWindow):
         self._create_actions()
         self._create_menus()
 
-        self.statusBar().setStyleSheet("""
-            QStatusBar {
-                padding-left: 24px;
-            }
-        """)
-
         self.status_label = QLabel(tr("status_ready"))
         self.status_label.setContentsMargins(
             layout.contentsMargins().left(),
             0,
             0,
-            0
+            6
         )
 
         self.statusBar().addWidget(self.status_label, 1)
+
+
+    def create_separator(self) -> QFrame:
+        separator = QFrame()
+        separator.setObjectName("separator")
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFixedHeight(1)
+        return separator
 
 
     def _create_actions(self):
@@ -1268,17 +1295,33 @@ class MiniEditor(QMainWindow):
         if dialog.exec() == dialog.DialogCode.Accepted:
             self.command_router = CommandRouter(self)
             self.reload_speech_settings()
-            self.apply_ui_settings()
             self.refresh_translations()
+            self.apply_ui_settings()
             self.show_status_message(tr("status_settings_saved"))
 
 
     def apply_ui_settings(self) -> None:
         settings = load_settings()
+
         show_command_input = bool(settings["show_command_input"])
+        show_speech_result = bool(settings["show_speech_result"])
+
+        self.speech_buttons_bottom_separator.setVisible(True)
+
+        self.speech_result_label.setVisible(show_speech_result)
+
+        self.speech_top_separator.setVisible(False)
 
         self.command_label.setVisible(show_command_input)
         self.command_input.setVisible(show_command_input)
+
+        self.command_top_separator.setVisible(
+            show_speech_result and show_command_input
+        )
+
+        self.status_top_separator.setVisible(
+            show_speech_result or show_command_input
+        )
 
 
     def refresh_translations(self) -> None:

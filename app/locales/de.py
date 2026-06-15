@@ -448,6 +448,11 @@ SETTINGS_DIALOG_TEXTS = {
     "language_german": "Deutsch",
     "language_english": "English",
 
+    "label_show_speech_result": "Erkannte Sprache anzeigen:",
+    "tooltip_show_speech_result": (
+        "Zeigt oder versteckt die Zeile mit dem zuletzt erkannten Diktat oder Sprachbefehl."
+    ),
+
     "tooltip_show_command_input": (
         "Zeigt oder versteckt die manuelle Befehlszeile unter den Sprachbuttons."
     ),

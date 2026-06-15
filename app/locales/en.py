@@ -397,6 +397,11 @@ SETTINGS_DIALOG_TEXTS = {
     "language_german": "Deutsch",
     "language_english": "English",
 
+    "label_show_speech_result": "Show recognized speech:",
+    "tooltip_show_speech_result": (
+        "Shows or hides the line with the most recently recognized dictation or voice command."
+    ),
+
     "tooltip_show_command_input": (
         "Shows or hides the manual command input below the speech buttons."
     ),
