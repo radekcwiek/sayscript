@@ -2,6 +2,7 @@ import json
 
 from app import config
 from app.platform_paths import ensure_app_dirs, get_settings_path
+from app.logging_setup import get_logger
 
 
 def get_default_settings() -> dict:
@@ -31,27 +32,38 @@ def get_default_settings() -> dict:
 def load_settings() -> dict:
     ensure_app_dirs()
 
+    logger = get_logger()
     settings_path = get_settings_path()
     default_settings = get_default_settings()
 
     if not settings_path.exists():
         save_settings(default_settings)
+        logger.info("Settings file created: %s", settings_path)
         return default_settings
 
     try:
         with open(settings_path, "r", encoding="utf-8") as file:
             loaded_settings = json.load(file)
 
-    except (OSError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError) as error:
+        logger.warning(
+            "Could not load settings file %s: %s",
+            settings_path,
+            error,
+        )
         return default_settings
 
+    logger.debug("Settings loaded: %s", settings_path)
     return default_settings | loaded_settings
 
 
 def save_settings(settings: dict) -> None:
     ensure_app_dirs()
 
+    logger = get_logger()
     settings_path = get_settings_path()
 
     with open(settings_path, "w", encoding="utf-8") as file:
         json.dump(settings, file, indent=4, ensure_ascii=False)
+
+    logger.info("Settings saved: %s", settings_path)

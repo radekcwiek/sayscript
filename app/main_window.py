@@ -33,6 +33,8 @@ from app.speech.transcriber import SpeechTranscriber
 from app.speech.speech_worker import SpeechWorker
 from app.localization import tr, voice_command_corrections
 from app.version import APP_NAME, APP_VERSION
+from app.logging_setup import get_logger
+
 import os
 import re
 
@@ -40,6 +42,9 @@ import re
 class MiniEditor(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.logger = get_logger()
+        self.logger.info("MainWindow initialized")
 
         self.setWindowTitle(tr("window_title_default"))
         self.resize(900, 650)
@@ -293,9 +298,11 @@ class MiniEditor(QMainWindow):
             self.editor.document().setModified(False)
             self.update_window_title()
             self.show_status_message(tr("status_file_opened"))
+            self.logger.info("File opened: %s", file_path)
             return True
 
         except OSError as error:
+            self.logger.exception("Opening file failed: %s", file_path)
             QMessageBox.critical(
                 self,
                 tr("error_title"),
@@ -334,7 +341,7 @@ class MiniEditor(QMainWindow):
                 if lower_file_path.endswith(".txt"):
                     file.write(self.editor.toPlainText())
 
-                elif lower_file_path.endswith(".md", ".markdown"):
+                elif lower_file_path.endswith((".md", ".markdown")):
                     file.write(self.editor.document().toMarkdown())
 
                 else:
@@ -343,9 +350,11 @@ class MiniEditor(QMainWindow):
             self.editor.document().setModified(False)
             self.update_window_title()
             self.show_status_message(tr("status_file_saved"))
+            self.logger.info("File saved: %s", file_path)
             return True
 
         except OSError as error:
+            self.logger.exception("Writing file failed: %s", file_path)
             QMessageBox.critical(
                 self,
                 tr("error_title"),
@@ -1304,6 +1313,7 @@ class MiniEditor(QMainWindow):
 
     def open_settings_dialog(self) -> None:
         dialog = SettingsDialog(self)
+        self.logger.info("Settings dialog opened")
 
         if dialog.exec() == dialog.DialogCode.Accepted:
             self.command_router = CommandRouter(self)
@@ -1311,6 +1321,7 @@ class MiniEditor(QMainWindow):
             self.refresh_translations()
             self.apply_ui_settings()
             self.show_status_message(tr("status_settings_saved"))
+            self.logger.info("Settings changed via settings dialog")
 
 
     def apply_ui_settings(self) -> None:
@@ -1396,9 +1407,11 @@ class MiniEditor(QMainWindow):
             self.editor.document().print_(printer)
 
             self.show_status_message(tr("status_pdf_exported"))
+            self.logger.info("PDF exported: %s", file_path)
             return True
 
         except Exception as error:
+            self.logger.exception("PDF export failed")
             QMessageBox.critical(
                 self,
                 tr("error_title"),
@@ -1421,9 +1434,12 @@ class MiniEditor(QMainWindow):
             self.editor.document().print_(printer)
 
             self.show_status_message(tr("status_printed"))
+            self.logger.info("Document sent to printer")
+
             return True
 
         except Exception as error:
+            self.logger.exception("Printing failed")
             QMessageBox.critical(
                 self,
                 tr("error_title"),
