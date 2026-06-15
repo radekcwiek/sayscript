@@ -220,6 +220,15 @@ COMMAND_ALIASES = {
         "konfiguration",
         "konfiguration öffnen",
     },
+    "about": {
+        "version",
+        "über sayscript",
+        "ueber sayscript",
+        "über das programm",
+        "ueber das programm",
+        "info",
+        "programminfo",
+    },
 }
 
 
@@ -331,6 +340,7 @@ MESSAGES = {
     "export_pdf_cancelled": "PDF-Export abgebrochen",
     "executed_print": "Befehl ausgeführt: drucken",
     "print_cancelled": "Drucken abgebrochen",
+    "executed_about": "Befehl ausgeführt: Über SayScript",
 
     "executed_heading_1": "Befehl ausgeführt: Überschrift 1",
     "executed_heading_2": "Befehl ausgeführt: Überschrift 2",

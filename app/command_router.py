@@ -329,6 +329,10 @@ class CommandRouter:
         elif action == "open_settings_dialog":
             self.editor_window.open_settings_dialog()
 
+        elif action == "about":
+            self.editor_window.show_about_dialog()
+            self.editor_window.show_status_message(self.msg("executed_about"))
+
         else:
             self.show_unknown_command(action)
 

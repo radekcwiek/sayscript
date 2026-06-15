@@ -176,6 +176,13 @@ COMMAND_ALIASES = {
         "configuration",
         "open configuration",
     },
+    "about": {
+        "version",
+        "about",
+        "about sayscript",
+        "program info",
+        "app info",
+    },
 }
 
 
@@ -270,6 +277,7 @@ MESSAGES = {
     "export_pdf_cancelled": "PDF export cancelled",
     "executed_print": "Command executed: print",
     "print_cancelled": "Print cancelled",
+    "executed_about": "Command executed: About SayScript",
 
     "executed_heading_1": "Command executed: heading 1",
     "executed_heading_2": "Command executed: heading 2",
