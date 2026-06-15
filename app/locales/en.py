@@ -62,6 +62,25 @@ COMMAND_ALIASES = {
         "new document",
         "create new document",
     },
+    "export_pdf": {
+        "export as pdf",
+        "export pdf",
+        "save as pdf",
+
+        "export as p d f",
+        "export p d f",
+        "save as p d f",
+
+        "export as pdf file",
+        "export pdf file",
+        "save as pdf file",
+    },
+    "print_document": {
+        "print",
+        "print document",
+        "print file",
+        "send to printer",
+    },
     "heading_1": {
         "heading 1",
         "heading one",
@@ -246,6 +265,11 @@ MESSAGES = {
     "open_cancelled": "Open cancelled",
     "executed_new_file": "Command executed: new file",
     "new_file_cancelled": "New file cancelled",
+
+    "executed_export_pdf": "Command executed: export as PDF",
+    "export_pdf_cancelled": "PDF export cancelled",
+    "executed_print": "Command executed: print",
+    "print_cancelled": "Print cancelled",
 
     "executed_heading_1": "Command executed: heading 1",
     "executed_heading_2": "Command executed: heading 2",
@@ -492,6 +516,16 @@ VOICE_COMMAND_CORRECTIONS = {
     "ollama test period": "ollama test",
 
     "settings period": "settings",
+
+    "export as pdf period": "export as pdf",
+    "export pdf period": "export pdf",
+    "save as pdf period": "save as pdf",
+    "export as p d f period": "export as p d f",
+    "export p d f period": "export p d f",
+
+    "print period": "print",
+    "print document period": "print document",
+    "send to printer period": "send to printer",
 }
 
 LLM_WORKER_MESSAGES = {

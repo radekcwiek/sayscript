@@ -1,4 +1,5 @@
 from PySide6.QtCore import Qt, QThread, QTimer
+from PySide6.QtPrintSupport import QPrinter, QPrintDialog
 from PySide6.QtGui import (
     QAction,
     QTextCharFormat,
@@ -216,6 +217,12 @@ class MiniEditor(QMainWindow):
         self.settings_action = QAction(tr("action_settings"), self)
         self.settings_action.triggered.connect(self.open_settings_dialog)
 
+        self.export_pdf_action = QAction(tr("action_export_pdf"), self)
+        self.export_pdf_action.triggered.connect(self.export_pdf)
+
+        self.print_action = QAction(tr("action_print"), self)
+        self.print_action.triggered.connect(self.print_document)
+
 
     def _create_menus(self):
         menu_bar = self.menuBar()
@@ -226,13 +233,12 @@ class MiniEditor(QMainWindow):
         file_menu.addAction(self.save_action)
         file_menu.addAction(self.save_as_action)
         file_menu.addSeparator()
+        file_menu.addAction(self.export_pdf_action)
+        file_menu.addAction(self.print_action)
+        file_menu.addSeparator()
         file_menu.addAction(self.settings_action)
         file_menu.addSeparator()
         file_menu.addAction(self.exit_action)
-
-        # format_menu = menu_bar.addMenu("Format")
-        # format_menu.addAction(self.bold_action)
-        # format_menu.addAction(self.italic_action)
 
 
     def new_file(self):
@@ -1331,7 +1337,9 @@ class MiniEditor(QMainWindow):
         self.open_action.setText(tr("action_open"))
         self.save_action.setText(tr("action_save"))
         self.save_as_action.setText(tr("action_save_as"))
+        self.print_action.setText(tr("action_print"))
         self.exit_action.setText(tr("action_exit"))
+        self.export_pdf_action.setText(tr("action_export_pdf"))
         self.settings_action.setText(tr("action_settings"))
 
         self.menuBar().clear()
@@ -1356,3 +1364,61 @@ class MiniEditor(QMainWindow):
         self.show_speech_result("")
 
         self.status_label.setText(tr("status_ready"))
+
+
+    def export_pdf(self) -> bool:
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            tr("dialog_export_pdf_title"),
+            "",
+            tr("file_filter_pdf"),
+        )
+
+        if not file_path:
+            return False
+
+        if not file_path.lower().endswith(".pdf"):
+            file_path += ".pdf"
+
+        try:
+            printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+            printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
+            printer.setOutputFileName(file_path)
+
+            self.editor.document().print_(printer)
+
+            self.show_status_message(tr("status_pdf_exported"))
+            return True
+
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                tr("error_title"),
+                tr("error_pdf_export", error=error),
+            )
+            return False
+
+
+
+    def print_document(self) -> bool:
+        try:
+            printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+
+            dialog = QPrintDialog(printer, self)
+            dialog.setWindowTitle(tr("dialog_print_title"))
+
+            if dialog.exec() != QPrintDialog.DialogCode.Accepted:
+                return False
+
+            self.editor.document().print_(printer)
+
+            self.show_status_message(tr("status_printed"))
+            return True
+
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                tr("error_title"),
+                tr("error_print", error=error),
+            )
+            return False

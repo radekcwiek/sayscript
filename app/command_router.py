@@ -221,6 +221,26 @@ class CommandRouter:
             else:
                 self.editor_window.show_status_message(self.msg("new_file_cancelled"))
 
+        elif action == "export_pdf":
+            if self.editor_window.export_pdf():
+                self.editor_window.show_status_message(
+                    self.msg("executed_export_pdf")
+                )
+            else:
+                self.editor_window.show_status_message(
+                    self.msg("export_pdf_cancelled")
+                )
+
+        elif action == "print_document":
+            if self.editor_window.print_document():
+                self.editor_window.show_status_message(
+                    self.msg("executed_print")
+                )
+            else:
+                self.editor_window.show_status_message(
+                    self.msg("print_cancelled")
+                )
+
         elif action == "heading_1":
             self.editor_window.set_heading(1)
             self.editor_window.show_status_message(self.msg("executed_heading_1"))

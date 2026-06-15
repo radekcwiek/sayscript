@@ -14,6 +14,11 @@ TRANSLATIONS = {
         "action_settings": "Einstellungen",
         "action_exit": "Beenden",
 
+        "action_print": "Drucken",
+        "dialog_print_title": "Drucken",
+        "status_printed": "Dokument gedruckt",
+        "error_print": "Dokument konnte nicht gedruckt werden:\n{error}",
+
         "button_dictation_start": "Diktieren",
         "button_dictation_stop": "Diktieren stoppen",
         "button_voice_command_start": "Sprachbefehl",
@@ -59,6 +64,12 @@ TRANSLATIONS = {
         "dialog_dictation_title": "Diktieren",
         "dialog_voice_command_title": "Sprachbefehl",
         "dialog_speech_title": "Spracherkennung",
+
+        "dialog_export_pdf_title": "Als PDF exportieren",
+        "file_filter_pdf": "PDF-Dateien (*.pdf)",
+        "status_pdf_exported": "PDF exportiert",
+        "error_pdf_export": "PDF konnte nicht exportiert werden:\n{error}",
+        "action_export_pdf": "Als PDF exportieren",
 
         "error_recording_start": "Die Aufnahme konnte nicht gestartet werden:\n{error}",
         "error_dictation_process": "Das Diktat konnte nicht verarbeitet werden:\n{error}",
@@ -155,6 +166,10 @@ TRANSLATIONS = {
         "action_save_as": "Save As",
         "action_settings": "Settings",
         "action_exit": "Exit",
+        "action_print": "Print",
+        "dialog_print_title": "Print",
+        "status_printed": "Document printed",
+        "error_print": "The document could not be printed:\n{error}",
 
         "button_dictation_start": "Dictate",
         "button_dictation_stop": "Stop dictation",
@@ -201,6 +216,12 @@ TRANSLATIONS = {
         "dialog_dictation_title": "Dictation",
         "dialog_voice_command_title": "Voice command",
         "dialog_speech_title": "Speech recognition",
+
+        "dialog_export_pdf_title": "Export as PDF",
+        "file_filter_pdf": "PDF files (*.pdf)",
+        "status_pdf_exported": "PDF exported",
+        "error_pdf_export": "The PDF could not be exported:\n{error}",
+        "action_export_pdf": "Export as PDF",
 
         "error_recording_start": "The recording could not be started:\n{error}",
         "error_dictation_process": "The dictation could not be processed:\n{error}",

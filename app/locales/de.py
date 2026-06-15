@@ -77,6 +77,35 @@ COMMAND_ALIASES = {
         "neues dokument",
         "dokument neu",
     },
+    "export_pdf": {
+        "exportiere als pdf",
+        "als pdf exportieren",
+        "pdf exportieren",
+        "exportiere pdf",
+        "speichere als pdf",
+        "als pdf speichern",
+
+        "exportiere als p d f",
+        "als p d f exportieren",
+        "p d f exportieren",
+        "exportiere p d f",
+        "speichere als p d f",
+        "als p d f speichern",
+
+        "exportiere als pdf datei",
+        "als pdf datei exportieren",
+        "pdf datei exportieren",
+    },
+    "print_document": {
+        "drucken",
+        "drucke",
+        "dokument drucken",
+        "datei drucken",
+        "drucke dokument",
+        "drucke datei",
+        "ausdrucken",
+        "dokument ausdrucken",
+    },
     "heading_1": {
         "überschrift 1",
         "überschrift eins",
@@ -297,6 +326,11 @@ MESSAGES = {
     "open_cancelled": "Öffnen abgebrochen",
     "executed_new_file": "Befehl ausgeführt: neue Datei",
     "new_file_cancelled": "Neue Datei abgebrochen",
+
+    "executed_export_pdf": "Befehl ausgeführt: als PDF exportieren",
+    "export_pdf_cancelled": "PDF-Export abgebrochen",
+    "executed_print": "Befehl ausgeführt: drucken",
+    "print_cancelled": "Drucken abgebrochen",
 
     "executed_heading_1": "Befehl ausgeführt: Überschrift 1",
     "executed_heading_2": "Befehl ausgeführt: Überschrift 2",
@@ -542,6 +576,16 @@ VOICE_COMMAND_CORRECTIONS = {
     "ollama test punkt": "ollama test",
 
     "einstellungen punkt": "einstellungen",
+
+    "exportiere als pdf punkt": "exportiere als pdf",
+    "als pdf exportieren punkt": "als pdf exportieren",
+    "pdf exportieren punkt": "pdf exportieren",
+    "exportiere als p d f punkt": "exportiere als p d f",
+    "als p d f exportieren punkt": "als p d f exportieren",
+
+    "drucken punkt": "drucken",
+    "drucke punkt": "drucke",
+    "ausdrucken punkt": "ausdrucken",
 }
 
 LLM_WORKER_MESSAGES = {
