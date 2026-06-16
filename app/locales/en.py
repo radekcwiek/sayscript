@@ -81,6 +81,15 @@ COMMAND_ALIASES = {
         "print file",
         "send to printer",
     },
+    "diagnostics": {
+        "diagnostics",
+        "diagnosis",
+        "system check",
+        "show diagnostics",
+        "open diagnostics",
+        "show system status",
+        "system status",
+    },
     "heading_1": {
         "heading 1",
         "heading one",
@@ -278,6 +287,7 @@ MESSAGES = {
     "executed_print": "Command executed: print",
     "print_cancelled": "Print cancelled",
     "executed_about": "Command executed: About SayScript",
+    "executed_diagnostics": "Command executed: diagnostics",
 
     "executed_heading_1": "Command executed: heading 1",
     "executed_heading_2": "Command executed: heading 2",
@@ -534,6 +544,11 @@ VOICE_COMMAND_CORRECTIONS = {
     "print period": "print",
     "print document period": "print document",
     "send to printer period": "send to printer",
+
+    "diagnostics period": "diagnostics",
+    "diagnosis period": "diagnosis",
+    "system check period": "system check",
+    "show diagnostics period": "show diagnostics",
 }
 
 LLM_WORKER_MESSAGES = {

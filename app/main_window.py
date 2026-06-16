@@ -25,7 +25,6 @@ from PySide6.QtWidgets import (
 
 from app.command_router import CommandRouter
 from app.llm_worker import LlmWorker
-from app.settings import get_settings_path, load_settings
 from app.llm_client import LlmClient
 from app.settings_dialog import SettingsDialog
 from app.speech.recorder import AudioRecorder
@@ -34,9 +33,13 @@ from app.speech.speech_worker import SpeechWorker
 from app.localization import tr, voice_command_corrections
 from app.version import APP_NAME, APP_VERSION
 from app.logging_setup import get_logger
+from app.settings import load_settings
+from app.platform_paths import get_settings_path, get_log_dir
 
 import os
 import re
+import platform
+import sys
 
 
 class MiniEditor(QMainWindow):
@@ -226,6 +229,9 @@ class MiniEditor(QMainWindow):
         self.about_action = QAction(tr("action_about"), self)
         self.about_action.triggered.connect(self.show_about_dialog)
 
+        self.diagnostics_action = QAction(tr("action_diagnostics"), self)
+        self.diagnostics_action.triggered.connect(self.show_diagnostics_dialog)
+
         self.export_pdf_action = QAction(tr("action_export_pdf"), self)
         self.export_pdf_action.triggered.connect(self.export_pdf)
 
@@ -250,6 +256,7 @@ class MiniEditor(QMainWindow):
         file_menu.addAction(self.exit_action)
 
         help_menu = menu_bar.addMenu(tr("menu_help"))
+        help_menu.addAction(self.diagnostics_action)
         help_menu.addAction(self.about_action)
 
 
@@ -1359,6 +1366,7 @@ class MiniEditor(QMainWindow):
         self.exit_action.setText(tr("action_exit"))
         self.export_pdf_action.setText(tr("action_export_pdf"))
         self.settings_action.setText(tr("action_settings"))
+        self.diagnostics_action.setText(tr("action_diagnostics"))
         self.about_action.setText(tr("action_about"))
 
         self.menuBar().clear()
@@ -1458,3 +1466,59 @@ class MiniEditor(QMainWindow):
                 app_version=APP_VERSION,
             ),
         )
+
+
+    def show_diagnostics_dialog(self) -> None:
+        settings = load_settings()
+
+        ollama_status_text = self.get_diagnostics_ollama_status(settings)
+
+        text = tr(
+            "diagnostics_text",
+            app_name=APP_NAME,
+            app_version=APP_VERSION,
+            os_name=platform.platform(),
+            python_version=sys.version.split()[0],
+            settings_path=get_settings_path(),
+            log_dir=get_log_dir(),
+            ollama_status=ollama_status_text,
+        )
+
+        QMessageBox.information(
+            self,
+            tr("dialog_diagnostics_title"),
+            text,
+        )
+
+        self.logger.info("Diagnostics dialog opened")
+
+
+    def get_diagnostics_ollama_status(self, settings: dict) -> str:
+        try:
+            llm_client = LlmClient(
+                model_name=settings["ollama_model_name"],
+                base_url=settings["ollama_base_url"],
+                timeout=5,
+                use_fake_response=False,
+            )
+
+            status = llm_client.check_ollama_status()
+
+            if status["ok"]:
+                return tr(
+                    "diagnostics_ollama_ok",
+                    model_name=settings["ollama_model_name"],
+                )
+
+            return tr(
+                "diagnostics_ollama_not_ok",
+                message=status["message"],
+            )
+
+        except Exception as error:
+            self.logger.exception("Diagnostics Ollama check failed")
+
+            return tr(
+                "diagnostics_ollama_not_ok",
+                message=error,
+            )

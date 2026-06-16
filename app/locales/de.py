@@ -106,6 +106,18 @@ COMMAND_ALIASES = {
         "ausdrucken",
         "dokument ausdrucken",
     },
+    "diagnostics": {
+        "diagnose",
+        "systemcheck",
+        "system check",
+        "zeige diagnose",
+        "öffne diagnose",
+        "oeffne diagnose",
+        "diagnose öffnen",
+        "diagnose oeffnen",
+        "zeige systemstatus",
+        "systemstatus",
+    },
     "heading_1": {
         "überschrift 1",
         "überschrift eins",
@@ -341,6 +353,7 @@ MESSAGES = {
     "executed_print": "Befehl ausgeführt: drucken",
     "print_cancelled": "Drucken abgebrochen",
     "executed_about": "Befehl ausgeführt: Über SayScript",
+    "executed_diagnostics": "Befehl ausgeführt: Diagnose",
 
     "executed_heading_1": "Befehl ausgeführt: Überschrift 1",
     "executed_heading_2": "Befehl ausgeführt: Überschrift 2",
@@ -596,6 +609,11 @@ VOICE_COMMAND_CORRECTIONS = {
     "drucken punkt": "drucken",
     "drucke punkt": "drucke",
     "ausdrucken punkt": "ausdrucken",
+
+    "diagnose punkt": "diagnose",
+    "systemcheck punkt": "systemcheck",
+    "system check punkt": "system check",
+    "zeige diagnose punkt": "zeige diagnose",
 }
 
 LLM_WORKER_MESSAGES = {

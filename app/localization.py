@@ -161,6 +161,21 @@ TRANSLATIONS = {
             "Lokaler KI-Texteditor mit Diktat, Sprachbefehlen und Ollama-Anbindung.\n\n"
             "Dieses Programm läuft lokal und nutzt lokale Modelle, sofern Ollama entsprechend eingerichtet ist."
         ),
+        "action_diagnostics": "Diagnose",
+        "dialog_diagnostics_title": "Diagnose",
+        "diagnostics_text": (
+            "{app_name} {app_version}\n\n"
+            "System\n"
+            "Betriebssystem: {os_name}\n"
+            "Python: {python_version}\n\n"
+            "Pfade\n"
+            "Einstellungen: {settings_path}\n"
+            "Logs: {log_dir}\n\n"
+            "Lokale KI\n"
+            "{ollama_status}"
+        ),
+        "diagnostics_ollama_ok": "Ollama ist erreichbar.\nModell: {model_name}",
+        "diagnostics_ollama_not_ok": "Ollama ist nicht bereit.\n{message}",
     },
 
     "en": {
@@ -321,6 +336,21 @@ TRANSLATIONS = {
             "Local AI text editor with dictation, voice commands, and Ollama integration.\n\n"
             "This program runs locally and uses local models when Ollama is configured accordingly."
         ),
+        "action_diagnostics": "Diagnostics",
+        "dialog_diagnostics_title": "Diagnostics",
+        "diagnostics_text": (
+            "{app_name} {app_version}\n\n"
+            "System\n"
+            "Operating system: {os_name}\n"
+            "Python: {python_version}\n\n"
+            "Paths\n"
+            "Settings: {settings_path}\n"
+            "Logs: {log_dir}\n\n"
+            "Local AI\n"
+            "{ollama_status}"
+        ),
+        "diagnostics_ollama_ok": "Ollama is reachable.\nModel: {model_name}",
+        "diagnostics_ollama_not_ok": "Ollama is not ready.\n{message}",
     },
 }
 

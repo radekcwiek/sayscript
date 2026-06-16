@@ -333,6 +333,12 @@ class CommandRouter:
             self.editor_window.show_about_dialog()
             self.editor_window.show_status_message(self.msg("executed_about"))
 
+        elif action == "diagnostics":
+            self.editor_window.show_diagnostics_dialog()
+            self.editor_window.show_status_message(
+                self.msg("executed_diagnostics")
+            )
+
         else:
             self.show_unknown_command(action)
 
