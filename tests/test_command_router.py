@@ -195,3 +195,21 @@ def test_english_transform_selection_is_not_bold(monkeypatch):
     assert parsed_command is not None
     assert parsed_command.action == "transform_selection"
     assert parsed_command.value == "make selection shorter"
+
+
+def test_german_document_info_command(monkeypatch):
+    router = create_router(monkeypatch, de)
+
+    parsed_command = parse(router, "wortzähler")
+
+    assert parsed_command is not None
+    assert parsed_command.action == "document_info"
+
+
+def test_english_document_info_command(monkeypatch):
+    router = create_router(monkeypatch, en)
+
+    parsed_command = parse(router, "word count")
+
+    assert parsed_command is not None
+    assert parsed_command.action == "document_info"

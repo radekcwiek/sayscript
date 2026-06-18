@@ -241,6 +241,21 @@ COMMAND_ALIASES = {
         "info",
         "programminfo",
     },
+    "document_info": {
+        "dokumentinfo",
+        "dokument info",
+        "zeige dokumentinfo",
+        "öffne dokumentinfo",
+        "oeffne dokumentinfo",
+        "wortzähler",
+        "wortzaehler",
+        "zeige wortzähler",
+        "zeige wortzaehler",
+        "wörter zählen",
+        "woerter zaehlen",
+        "anzahl wörter",
+        "anzahl woerter",
+    },
 }
 
 
@@ -354,6 +369,7 @@ MESSAGES = {
     "print_cancelled": "Drucken abgebrochen",
     "executed_about": "Befehl ausgeführt: Über SayScript",
     "executed_diagnostics": "Befehl ausgeführt: Diagnose",
+    "executed_document_info": "Befehl ausgeführt: Dokumentinfo",
 
     "executed_heading_1": "Befehl ausgeführt: Überschrift 1",
     "executed_heading_2": "Befehl ausgeführt: Überschrift 2",
@@ -614,6 +630,13 @@ VOICE_COMMAND_CORRECTIONS = {
     "systemcheck punkt": "systemcheck",
     "system check punkt": "system check",
     "zeige diagnose punkt": "zeige diagnose",
+
+    "dokumentinfo punkt": "dokumentinfo",
+    "dokument info punkt": "dokument info",
+    "wortzähler punkt": "wortzähler",
+    "wortzaehler punkt": "wortzaehler",
+    "wörter zählen punkt": "wörter zählen",
+    "woerter zaehlen punkt": "woerter zaehlen",
 }
 
 LLM_WORKER_MESSAGES = {

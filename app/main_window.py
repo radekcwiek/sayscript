@@ -38,6 +38,7 @@ from app.platform_paths import get_settings_path, get_log_dir
 
 import os
 import re
+import math
 import platform
 import sys
 
@@ -232,6 +233,9 @@ class MiniEditor(QMainWindow):
         self.diagnostics_action = QAction(tr("action_diagnostics"), self)
         self.diagnostics_action.triggered.connect(self.show_diagnostics_dialog)
 
+        self.document_info_action = QAction(tr("action_document_info"), self)
+        self.document_info_action.triggered.connect(self.show_document_info_dialog)
+
         self.export_pdf_action = QAction(tr("action_export_pdf"), self)
         self.export_pdf_action.triggered.connect(self.export_pdf)
 
@@ -254,6 +258,9 @@ class MiniEditor(QMainWindow):
         file_menu.addAction(self.settings_action)
         file_menu.addSeparator()
         file_menu.addAction(self.exit_action)
+
+        tools_menu = menu_bar.addMenu(tr("menu_tools"))
+        tools_menu.addAction(self.document_info_action)
 
         help_menu = menu_bar.addMenu(tr("menu_help"))
         help_menu.addAction(self.diagnostics_action)
@@ -1367,6 +1374,7 @@ class MiniEditor(QMainWindow):
         self.export_pdf_action.setText(tr("action_export_pdf"))
         self.settings_action.setText(tr("action_settings"))
         self.diagnostics_action.setText(tr("action_diagnostics"))
+        self.document_info_action.setText(tr("action_document_info"))
         self.about_action.setText(tr("action_about"))
 
         self.menuBar().clear()
@@ -1522,3 +1530,51 @@ class MiniEditor(QMainWindow):
                 "diagnostics_ollama_not_ok",
                 message=error,
             )
+
+
+    def get_document_statistics(self) -> dict:
+        text = self.editor.toPlainText()
+
+        words = re.findall(r"\b\w+\b", text, flags=re.UNICODE)
+
+        character_count = len(text)
+        character_count_without_spaces = len(re.sub(r"\s+", "", text))
+
+        paragraphs = [
+            paragraph
+            for paragraph in re.split(r"\n\s*\n", text.strip())
+            if paragraph.strip()
+        ]
+
+        lines = text.splitlines()
+
+        word_count = len(words)
+        paragraph_count = len(paragraphs)
+        line_count = len(lines)
+
+        if word_count == 0:
+            reading_time = 0
+        else:
+            reading_time = max(1, math.ceil(word_count / 200))
+
+        return {
+            "word_count": word_count,
+            "character_count": character_count,
+            "character_count_without_spaces": character_count_without_spaces,
+            "paragraph_count": paragraph_count,
+            "line_count": line_count,
+            "reading_time": reading_time,
+        }
+
+
+    def show_document_info_dialog(self) -> None:
+        statistics = self.get_document_statistics()
+
+        QMessageBox.information(
+            self,
+            tr("dialog_document_info_title"),
+            tr("document_info_text", **statistics),
+        )
+
+        self.show_status_message(tr("status_document_info_shown"))
+        self.logger.info("Document info shown")

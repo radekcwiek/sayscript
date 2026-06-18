@@ -192,6 +192,16 @@ COMMAND_ALIASES = {
         "program info",
         "app info",
     },
+    "document_info": {
+        "document info",
+        "show document info",
+        "open document info",
+        "word count",
+        "show word count",
+        "count words",
+        "document statistics",
+        "text statistics",
+    },
 }
 
 
@@ -288,6 +298,7 @@ MESSAGES = {
     "print_cancelled": "Print cancelled",
     "executed_about": "Command executed: About SayScript",
     "executed_diagnostics": "Command executed: diagnostics",
+    "executed_document_info": "Command executed: document info",
 
     "executed_heading_1": "Command executed: heading 1",
     "executed_heading_2": "Command executed: heading 2",
@@ -549,6 +560,12 @@ VOICE_COMMAND_CORRECTIONS = {
     "diagnosis period": "diagnosis",
     "system check period": "system check",
     "show diagnostics period": "show diagnostics",
+
+    "document info period": "document info",
+    "word count period": "word count",
+    "count words period": "count words",
+    "document statistics period": "document statistics",
+    "text statistics period": "text statistics",
 }
 
 LLM_WORKER_MESSAGES = {

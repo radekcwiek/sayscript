@@ -176,6 +176,18 @@ TRANSLATIONS = {
         ),
         "diagnostics_ollama_ok": "Ollama ist erreichbar.\nModell: {model_name}",
         "diagnostics_ollama_not_ok": "Ollama ist nicht bereit.\n{message}",
+        "menu_tools": "Werkzeuge",
+        "action_document_info": "Dokumentinfo",
+        "dialog_document_info_title": "Dokumentinfo",
+        "document_info_text": (
+            "Wörter: {word_count}\n"
+            "Zeichen: {character_count}\n"
+            "Zeichen ohne Leerzeichen: {character_count_without_spaces}\n"
+            "Absätze: {paragraph_count}\n"
+            "Zeilen: {line_count}\n"
+            "Geschätzte Lesezeit: {reading_time} Min."
+        ),
+        "status_document_info_shown": "Dokumentinfo angezeigt",
     },
 
     "en": {
@@ -351,6 +363,18 @@ TRANSLATIONS = {
         ),
         "diagnostics_ollama_ok": "Ollama is reachable.\nModel: {model_name}",
         "diagnostics_ollama_not_ok": "Ollama is not ready.\n{message}",
+        "menu_tools": "Tools",
+        "action_document_info": "Document Info",
+        "dialog_document_info_title": "Document Info",
+        "document_info_text": (
+            "Words: {word_count}\n"
+            "Characters: {character_count}\n"
+            "Characters without spaces: {character_count_without_spaces}\n"
+            "Paragraphs: {paragraph_count}\n"
+            "Lines: {line_count}\n"
+            "Estimated reading time: {reading_time} min."
+        ),
+        "status_document_info_shown": "Document info shown",
     },
 }
 

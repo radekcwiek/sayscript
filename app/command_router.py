@@ -223,23 +223,15 @@ class CommandRouter:
 
         elif action == "export_pdf":
             if self.editor_window.export_pdf():
-                self.editor_window.show_status_message(
-                    self.msg("executed_export_pdf")
-                )
+                self.editor_window.show_status_message(self.msg("executed_export_pdf"))
             else:
-                self.editor_window.show_status_message(
-                    self.msg("export_pdf_cancelled")
-                )
+                self.editor_window.show_status_message(self.msg("export_pdf_cancelled"))
 
         elif action == "print_document":
             if self.editor_window.print_document():
-                self.editor_window.show_status_message(
-                    self.msg("executed_print")
-                )
+                self.editor_window.show_status_message(self.msg("executed_print"))
             else:
-                self.editor_window.show_status_message(
-                    self.msg("print_cancelled")
-                )
+                self.editor_window.show_status_message(self.msg("print_cancelled"))
 
         elif action == "heading_1":
             self.editor_window.set_heading(1)
@@ -287,15 +279,11 @@ class CommandRouter:
 
         elif action == "font_size":
             self.editor_window.set_font_size(value)
-            self.editor_window.show_status_message(
-                self.msg("executed_font_size", value=value)
-            )
+            self.editor_window.show_status_message(self.msg("executed_font_size", value=value))
 
         elif action == "font_family":
             if self.editor_window.set_font_family(value):
-                self.editor_window.show_status_message(
-                    self.msg("executed_font_family", value=value)
-                )
+                self.editor_window.show_status_message(self.msg("executed_font_family", value=value))
 
         elif action == "insert_text":
             self.editor_window.insert_text(value)
@@ -335,9 +323,11 @@ class CommandRouter:
 
         elif action == "diagnostics":
             self.editor_window.show_diagnostics_dialog()
-            self.editor_window.show_status_message(
-                self.msg("executed_diagnostics")
-            )
+            self.editor_window.show_status_message(self.msg("executed_diagnostics"))
+
+        elif action == "document_info":
+            self.editor_window.show_document_info_dialog()
+            self.editor_window.show_status_message(self.msg("executed_document_info"))
 
         else:
             self.show_unknown_command(action)
@@ -356,9 +346,7 @@ class CommandRouter:
                     if 6 <= size <= 96:
                         return size
 
-                    self.editor_window.show_status_message(
-                        self.msg("font_size_out_of_range")
-                    )
+                    self.editor_window.show_status_message(self.msg("font_size_out_of_range"))
                     return None
 
         return None
