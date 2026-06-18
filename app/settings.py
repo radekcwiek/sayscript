@@ -26,6 +26,8 @@ def get_default_settings() -> dict:
         "show_speech_result": config.SHOW_SPEECH_RESULT,
         "interface_language": config.INTERFACE_LANGUAGE,
         "text_generation_language": config.TEXT_GENERATION_LANGUAGE,
+        "enable_autosave": config.ENABLE_AUTOSAVE,
+        "autosave_interval_seconds": config.AUTOSAVE_INTERVAL_SECONDS,
     }
 
 

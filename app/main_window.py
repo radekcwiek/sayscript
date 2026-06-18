@@ -34,7 +34,7 @@ from app.localization import tr, voice_command_corrections
 from app.version import APP_NAME, APP_VERSION
 from app.logging_setup import get_logger
 from app.settings import load_settings
-from app.platform_paths import get_settings_path, get_log_dir
+from app.platform_paths import get_settings_path, get_log_dir, get_autosave_path
 
 import os
 import re
@@ -198,6 +198,11 @@ class MiniEditor(QMainWindow):
         )
 
         self.statusBar().addWidget(self.status_label, 1)
+
+        self.autosave_timer = QTimer(self)
+        self.autosave_timer.timeout.connect(self.auto_save_document)
+        self.apply_autosave_settings()
+        QTimer.singleShot(0, self.offer_autosave_restore)
 
 
     def create_separator(self) -> QFrame:
@@ -365,6 +370,7 @@ class MiniEditor(QMainWindow):
             self.update_window_title()
             self.show_status_message(tr("status_file_saved"))
             self.logger.info("File saved: %s", file_path)
+            self.clear_autosave()
             return True
 
         except OSError as error:
@@ -1334,6 +1340,7 @@ class MiniEditor(QMainWindow):
             self.reload_speech_settings()
             self.refresh_translations()
             self.apply_ui_settings()
+            self.apply_autosave_settings()
             self.show_status_message(tr("status_settings_saved"))
             self.logger.info("Settings changed via settings dialog")
 
@@ -1578,3 +1585,134 @@ class MiniEditor(QMainWindow):
 
         self.show_status_message(tr("status_document_info_shown"))
         self.logger.info("Document info shown")
+
+
+    def auto_save_document(self) -> None:
+        settings = load_settings()
+
+        if not bool(settings["enable_autosave"]):
+            return
+
+        if not self.editor.document().isModified():
+            return
+
+        text = self.editor.toPlainText().strip()
+
+        if not text:
+            return
+
+        autosave_path = get_autosave_path()
+
+        try:
+            with open(autosave_path, "w", encoding="utf-8") as file:
+                file.write(self.editor.toHtml())
+
+            self.logger.info("Auto-save written: %s", autosave_path)
+
+        except Exception:
+            self.logger.exception("Auto-save failed: %s", autosave_path)
+
+
+    def clear_autosave(self) -> None:
+        autosave_path = get_autosave_path()
+
+        try:
+            if autosave_path.exists():
+                autosave_path.unlink()
+                self.logger.info("Auto-save cleared: %s", autosave_path)
+
+        except Exception:
+            self.logger.exception("Clearing auto-save failed: %s", autosave_path)
+
+
+    def offer_autosave_restore(self) -> None:
+        autosave_path = get_autosave_path()
+
+        try:
+            if not autosave_path.exists():
+                return
+
+            if autosave_path.stat().st_size == 0:
+                return
+
+            message_box = QMessageBox(self)
+            message_box.setIcon(QMessageBox.Icon.Question)
+            message_box.setWindowTitle(tr("dialog_restore_autosave_title"))
+            message_box.setText(tr("restore_autosave_text"))
+
+            restore_button = message_box.addButton(
+                tr("button_restore"),
+                QMessageBox.ButtonRole.AcceptRole,
+            )
+            discard_button = message_box.addButton(
+                tr("button_discard"),
+                QMessageBox.ButtonRole.DestructiveRole,
+            )
+            cancel_button = message_box.addButton(
+                tr("button_cancel"),
+                QMessageBox.ButtonRole.RejectRole,
+            )
+
+            message_box.setDefaultButton(restore_button)
+            message_box.exec()
+
+            clicked_button = message_box.clickedButton()
+
+            if clicked_button == restore_button:
+                self.restore_autosave()
+            elif clicked_button == discard_button:
+                self.clear_autosave()
+                self.show_status_message(tr("status_autosave_discarded"))
+                self.logger.info("Auto-save discarded by user: %s", autosave_path)
+            elif clicked_button == cancel_button:
+                self.logger.info("Auto-save restore cancelled by user")
+
+        except Exception:
+            self.logger.exception("Checking auto-save failed: %s", autosave_path)
+
+
+    def restore_autosave(self) -> None:
+        autosave_path = get_autosave_path()
+
+        try:
+            with open(autosave_path, "r", encoding="utf-8") as file:
+                content = file.read()
+
+            self.editor.setHtml(content)
+            self.current_file_path = None
+            self.editor.document().setModified(True)
+            self.update_window_title()
+            self.show_status_message(tr("status_autosave_restored"))
+
+            self.logger.info("Auto-save restored: %s", autosave_path)
+
+        except Exception as error:
+            self.logger.exception("Restoring auto-save failed: %s", autosave_path)
+
+            QMessageBox.critical(
+                self,
+                tr("error_title"),
+                tr("error_autosave_restore", error=error),
+            )
+
+
+    def apply_autosave_settings(self) -> None:
+        settings = load_settings()
+
+        enable_autosave = bool(settings["enable_autosave"])
+        interval_seconds = int(settings["autosave_interval_seconds"])
+
+        if not enable_autosave:
+            self.autosave_timer.stop()
+            self.logger.info("Auto-save disabled")
+            return
+
+        interval_seconds = max(10, interval_seconds)
+        interval_milliseconds = interval_seconds * 1000
+
+        self.autosave_timer.start(interval_milliseconds)
+
+        self.logger.info(
+            "Auto-save enabled with interval: %s seconds",
+            interval_seconds,
+        )

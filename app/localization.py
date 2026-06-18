@@ -188,6 +188,17 @@ TRANSLATIONS = {
             "Geschätzte Lesezeit: {reading_time} Min."
         ),
         "status_document_info_shown": "Dokumentinfo angezeigt",
+        "dialog_restore_autosave_title": "Nicht gespeichertes Dokument gefunden",
+        "restore_autosave_text": (
+            "SayScript hat eine automatisch gespeicherte Version eines Dokuments gefunden.\n\n"
+            "Möchtest du diese Version wiederherstellen?"
+        ),
+        "button_restore": "Wiederherstellen",
+        "button_discard": "Verwerfen",
+        "button_cancel": "Abbrechen",
+        "status_autosave_restored": "Automatisch gespeichertes Dokument wiederhergestellt",
+        "status_autosave_discarded": "Automatisch gespeichertes Dokument verworfen",
+        "error_autosave_restore": "Automatisch gespeichertes Dokument konnte nicht wiederhergestellt werden:\n{error}",
     },
 
     "en": {
@@ -375,6 +386,17 @@ TRANSLATIONS = {
             "Estimated reading time: {reading_time} min."
         ),
         "status_document_info_shown": "Document info shown",
+        "dialog_restore_autosave_title": "Unsaved document found",
+        "restore_autosave_text": (
+            "SayScript found an automatically saved version of a document.\n\n"
+            "Do you want to restore this version?"
+        ),
+        "button_restore": "Restore",
+        "button_discard": "Discard",
+        "button_cancel": "Cancel",
+        "status_autosave_restored": "Auto-saved document restored",
+        "status_autosave_discarded": "Auto-saved document discarded",
+        "error_autosave_restore": "The auto-saved document could not be restored:\n{error}",
     },
 }
 

@@ -511,6 +511,10 @@ SETTINGS_DIALOG_TEXTS = {
     "ollama_found_models": "Found models:",
     "ollama_test_success": "Ollama is reachable.\n\n{message}\n\nModels:\n{models}",
     "ollama_test_failure": "Ollama test failed.\n\n{message}",
+
+    "autosave_group": "Auto-save",
+    "enable_autosave": "Enable auto-save",
+    "autosave_interval_seconds": "Interval in seconds",
 }
 
 VOICE_COMMAND_CORRECTIONS = {

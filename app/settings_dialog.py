@@ -8,9 +8,11 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QComboBox,
+    QWidget,
 )
 
 from app.settings import load_settings, save_settings
@@ -23,7 +25,9 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle(self.txt("title"))
-        self.setMinimumWidth(420)
+        self.setMinimumWidth(520)
+        self.setMinimumHeight(420)
+        self.resize(620, 720)
 
         self.settings = load_settings()
 
@@ -84,28 +88,6 @@ class SettingsDialog(QDialog):
             self.text_generation_language_input.findData(
                 self.settings["text_generation_language"]
             )
-        )
-        self.text_generation_language_input.setToolTip(
-            self.txt("tooltip_text_generation_language")
-        )
-
-        self.interface_language_input = QComboBox()
-        self.interface_language_input.addItem(self.txt("language_german"), "de")
-        self.interface_language_input.addItem(self.txt("language_english"), "en")
-        self.set_combo_by_data(
-            self.interface_language_input,
-            self.settings["interface_language"],
-        )
-        self.interface_language_input.setToolTip(
-            self.txt("tooltip_interface_language")
-        )
-
-        self.text_generation_language_input = QComboBox()
-        self.text_generation_language_input.addItem(self.txt("language_german"), "de")
-        self.text_generation_language_input.addItem(self.txt("language_english"), "en")
-        self.set_combo_by_data(
-            self.text_generation_language_input,
-            self.settings["text_generation_language"],
         )
         self.text_generation_language_input.setToolTip(
             self.txt("tooltip_text_generation_language")
@@ -232,6 +214,29 @@ class SettingsDialog(QDialog):
         speech_layout.addRow(self.txt("label_beam_size"), self.speech_beam_size_input)
         speech_group.setLayout(speech_layout)
 
+        self.autosave_group = QGroupBox(self.txt("autosave_group"))
+        autosave_layout = QFormLayout(self.autosave_group)
+
+        self.enable_autosave_checkbox = QCheckBox(
+            self.txt("enable_autosave")
+        )
+        self.enable_autosave_checkbox.setChecked(
+            bool(self.settings["enable_autosave"])
+        )
+
+        self.autosave_interval_input = QSpinBox()
+        self.autosave_interval_input.setRange(10, 3600)
+        self.autosave_interval_input.setSingleStep(10)
+        self.autosave_interval_input.setValue(
+            int(self.settings["autosave_interval_seconds"])
+        )
+
+        autosave_layout.addRow(self.enable_autosave_checkbox)
+        autosave_layout.addRow(
+            self.txt("autosave_interval_seconds"),
+            self.autosave_interval_input,
+        )
+
         self.button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save
             | QDialogButtonBox.StandardButton.Cancel
@@ -239,12 +244,23 @@ class SettingsDialog(QDialog):
         self.button_box.accepted.connect(self.save_and_accept)
         self.button_box.rejected.connect(self.reject)
 
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+
+        content_layout.addWidget(connection_group)
+        content_layout.addWidget(generate_group)
+        content_layout.addWidget(transform_group)
+        content_layout.addWidget(continue_group)
+        content_layout.addWidget(speech_group)
+        content_layout.addWidget(self.autosave_group)
+        content_layout.addStretch()
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(content_widget)
+
         layout = QVBoxLayout()
-        layout.addWidget(connection_group)
-        layout.addWidget(generate_group)
-        layout.addWidget(transform_group)
-        layout.addWidget(continue_group)
-        layout.addWidget(speech_group)
+        layout.addWidget(scroll_area)
         layout.addWidget(self.button_box)
 
         self.setLayout(layout)
@@ -277,12 +293,11 @@ class SettingsDialog(QDialog):
         self.settings["show_command_input"] = self.show_command_input_checkbox.isChecked()
         self.settings["show_speech_result"] = (self.show_speech_result_checkbox.isChecked())
 
-        self.settings["interface_language"] = (
-            self.interface_language_input.currentData()
-        )
-        self.settings["text_generation_language"] = (
-            self.text_generation_language_input.currentData()
-        )
+        self.settings["enable_autosave"] = (self.enable_autosave_checkbox.isChecked())
+        self.settings["autosave_interval_seconds"] = (self.autosave_interval_input.value())
+
+        self.settings["interface_language"] = (self.interface_language_input.currentData())
+        self.settings["text_generation_language"] = (self.text_generation_language_input.currentData())
 
         save_settings(self.settings)
         self.accept()

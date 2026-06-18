@@ -65,8 +65,17 @@ def get_settings_path() -> Path:
     return get_config_dir() / "settings.json"
 
 
+def get_autosave_dir() -> Path:
+    return get_state_dir() / "autosave"
+
+
+def get_autosave_path() -> Path:
+    return get_autosave_dir() / "autosave.html"
+
+
 def ensure_app_dirs() -> None:
     get_config_dir().mkdir(parents=True, exist_ok=True)
     get_data_dir().mkdir(parents=True, exist_ok=True)
     get_state_dir().mkdir(parents=True, exist_ok=True)
     get_log_dir().mkdir(parents=True, exist_ok=True)
+    get_autosave_dir().mkdir(parents=True, exist_ok=True)
