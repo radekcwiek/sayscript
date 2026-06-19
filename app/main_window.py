@@ -1112,7 +1112,6 @@ class MiniEditor(QMainWindow):
 
     def on_voice_command_transcription_finished(self, text: str) -> None:
         """Clean and execute a recognized voice command."""
-        self.set_speech_buttons_enabled(True)
         self.set_command_input_enabled(True)
 
         self.show_speech_result(text)
@@ -1120,6 +1119,7 @@ class MiniEditor(QMainWindow):
         command = self.clean_voice_command_text(text)
 
         if not command:
+            self.set_speech_buttons_enabled(True)
             self.show_status_message(tr("status_no_voice_command"))
             return
 
@@ -1140,6 +1140,9 @@ class MiniEditor(QMainWindow):
 
         self.command_router.execute(command)
         self.command_input.clear()
+
+        if self.llm_thread is None or not self.llm_thread.isRunning():
+            self.set_speech_buttons_enabled(True)
 
     def clean_voice_command_text(self, text: str) -> str:
         """
@@ -1207,6 +1210,7 @@ class MiniEditor(QMainWindow):
 
         self.show_status_message(tr("status_ai_generating"))
         self.set_command_input_enabled(False)
+        self.set_speech_buttons_enabled(False)
 
         self.llm_thread = QThread()
         self.llm_worker = LlmWorker(
@@ -1236,6 +1240,7 @@ class MiniEditor(QMainWindow):
 
         self.show_status_message(tr("status_ai_transforming_selection"))
         self.set_command_input_enabled(False)
+        self.set_speech_buttons_enabled(False)
 
         self.llm_thread = QThread()
         self.llm_worker = LlmWorker(
@@ -1266,6 +1271,7 @@ class MiniEditor(QMainWindow):
 
         self.show_status_message(tr("status_ai_continuing"))
         self.set_command_input_enabled(False)
+        self.set_speech_buttons_enabled(False)
 
         self.llm_thread = QThread()
         self.llm_worker = LlmWorker(
@@ -1303,6 +1309,7 @@ class MiniEditor(QMainWindow):
     ) -> None:
         """Insert or replace text after an LLM worker finishes."""
         self.set_command_input_enabled(True)
+        self.set_speech_buttons_enabled(True)
 
         if mode == "generate":
             self.insert_generated_text_as_paragraph(
@@ -1331,6 +1338,7 @@ class MiniEditor(QMainWindow):
     def on_llm_generation_failed(self, error_message: str) -> None:
         """Show an LLM error message after a worker failure."""
         self.set_command_input_enabled(True)
+        self.set_speech_buttons_enabled(True)
 
         clean_message = (
             error_message

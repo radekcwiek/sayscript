@@ -314,6 +314,7 @@ diagnose
 generiere einen text über hunde
 suche nach hund
 ersetze hund durch katze
+mache auswahl französisch
 ```
 
 Examples of supported English commands:
@@ -333,6 +334,7 @@ about sayscript
 generate a text about dogs
 search for dog
 replace cat with dog
+transform selection to french
 ```
 
 ## Current Status
