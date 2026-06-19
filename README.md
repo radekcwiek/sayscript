@@ -2,12 +2,12 @@
 
 SayScript is a local AI-assisted text editor with dictation, voice commands, and text generation through a locally running LLM.
 
-The application is built with Python and PySide6. It supports classic text editing, speech-to-text dictation, voice-controlled commands, local AI text generation and transformation, PDF export, printing, localization, logging, diagnostics, and configurable settings.
+The application is built with Python and PySide6. It supports classic text editing, speech-to-text dictation, voice-controlled commands, local AI text generation and transformation, PDF export, printing, localization, logging, diagnostics, document autosave and recovery and configurable settings.
 
 ## Project Goal
 
-SayScript was created as a practical desktop application and portfolio project.
-The goal is to demonstrate software development skills in a realistic application context:
+SayScript was created as a practical desktop application and portfolio project. 
+The goal is to demonstrate software development skills in a realistic application context by creating something useful:
 
 * desktop GUI development with PySide6
 * modular Python architecture
@@ -40,6 +40,8 @@ The goal is to demonstrate software development skills in a realistic applicatio
 * Platform-aware settings paths for Windows and Linux
 * Rotating log file
 * Diagnostics dialog
+* Configurable document autosave and recovery
+* Word count and document statistics
 * Unit tests for command parsing
 
 ## Technology Stack
@@ -101,9 +103,13 @@ The current default model can be configured in the settings dialog.
 ## Requirements
 
 * Python 3.11 or newer recommended
-* Ollama installed and running
+* Ollama installed and running locally
 * An installed Ollama model, for example `qwen3:8b`
 * Microphone access for dictation and voice commands
+* System with 16 GB RAM for a `faster-whisper` and `qwen3:8b` configuration. 
+
+A dedicated graphics adapter with at least 8 GB VRAM is recommended for better performance, but not required. 
+
 
 ## Installation
 
@@ -125,11 +131,47 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Alternatively, use the helper script:
+
+```bash
+chmod +x run_linux.sh
+./run_linux.sh
+```
+
 On Linux, additional system packages may be required for audio input, Qt, or printing, depending on the distribution.
+
+### Local AI Models
+
+Ollama can be downloaded here: [Ollama](https://ollama.com). We recommend using the `qwen3:8b` model, which can be installed and started like this:
+
+```text
+ollama run qwen3:8b
+```
+
+SayScript connects to Ollama through the configured local endpoint, by default:
+
+```text
+http://localhost:11434
+```
+
+During first time usage, the default speech recognition model `faster-whisper` medium 8bit will be downloaded in the background after the first voice input. Its size is roughly around 800 MB. 
+
+### Linux audio notes
+
+SayScript uses `sounddevice` for microphone input.  
+On some Linux distributions, PortAudio may need to be installed separately.
+
+Debian/Ubuntu example:
+
+```bash
+sudo apt install portaudio19-dev
+```
+
+Microphone permissions and the active audio system, for example PulseAudio or PipeWire, may also affect recording.
 
 ## Build
 
-SayScript includes a PowerShell build script for creating a Windows `onedir` release with PyInstaller.
+SayScript includes PowerShell and bash build scripts for creating a Windows  or Linux `onedir` release with PyInstaller.
 
 ### Windows onedir build
 
@@ -152,25 +194,38 @@ The build output is created in:
 dist\SayScript
 ```
 
+The executable is:
+
+```text
+dist\SayScript\SayScript.exe
+```
+
+### Linux onedir build
+
+A Linux build must be created on Linux.
+
+```bash
+chmod +x build_linux.sh
+./build_linux.sh
+```
+
+The build output is created in:
+
+```bash
+dist/SayScript
+```
+
+The executable is:
+
+```bash
+dist/SayScript/SayScript
+```
+
 The `onedir` build keeps the application executable and its required runtime files together in one folder. This makes the build easier to inspect, test, and distribute than a single-file executable during development.
 
 ### Build artifacts
 
-Generated build folders such as `build/` and `dist/` should usually not be committed to Git. They can be recreated from the source code and the build script.
-
-## Development Setup
-
-Install development dependencies:
-
-```powershell
-pip install -r requirements-dev.txt
-```
-
-Run tests:
-
-```powershell
-python -m pytest
-```
+Generated build folders such as `build` and `dist` should usually not be committed to Git. They can be recreated from the source code and the build script.
 
 ## Tests
 
@@ -189,6 +244,12 @@ The tests check that typed or spoken commands are mapped to the correct internal
 
 The tests intentionally avoid the real GUI, Ollama, and microphone input.
 This keeps the core command parsing logic fast and reliable to test.
+
+Run tests:
+
+```powershell
+python -m pytest
+```
 
 ## Logging
 
@@ -286,6 +347,8 @@ Implemented:
 * diagnostics
 * command router tests
 * Windows/Linux path abstraction
+* word count and document statistics
+* autosave and recovery
 * Windows onedir build script
 + The build script uses the PyInstaller configuration from `SayScript.spec`.
 
@@ -294,22 +357,11 @@ Planned:
 * improved Linux packaging
 * Windows release package
 * additional tests
-* word count and document statistics
-* autosave and recovery
 * optional DOCX export
-* improved documentation with screenshots
 
 ## Screenshots
 
 Screenshots will be added later.
-
-Recommended screenshots:
-
-1. Main editor window
-2. Settings dialog
-3. Diagnostics dialog
-4. Voice command workflow
-5. PDF export or print workflow
 
 ## License
 
