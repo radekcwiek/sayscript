@@ -1,5 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+Localization helpers for SayScript.
+
+This module provides two kinds of localization data:
+
+1. Main-window texts stored directly in TRANSLATIONS.
+2. Specialized language data loaded from app.locales.de or app.locales.en.
+
+The specialized language modules contain command aliases, command-router
+messages, speech prompts, LLM prompts, settings-dialogue texts, and voice-command
+corrections.
+
+The currently active language is read from the persistent settings file.
+"""
+
 from app.settings import load_settings
 
+
+# Main-window translations --------------------------------------------------
+#
+# These strings are used mainly by main_window.py and general dialogues.
+# Command aliases, LLM prompts, speech texts, and settings-dialogue labels live
+# in app.locales.de and app.locales.en to keep this file from becoming even
+# larger.
 
 TRANSLATIONS = {
     "de": {
@@ -153,6 +177,7 @@ TRANSLATIONS = {
         "status_open_cancelled": "Öffnen abgebrochen",
         "status_save_cancelled": "Speichern abgebrochen",
         "status_new_file_cancelled": "Neue Datei abgebrochen",
+
         "menu_help": "Hilfe",
         "action_about": "Über SayScript",
         "dialog_about_title": "Über SayScript",
@@ -161,6 +186,7 @@ TRANSLATIONS = {
             "Lokaler KI-Texteditor mit Diktat, Sprachbefehlen und Ollama-Anbindung.\n\n"
             "Dieses Programm läuft lokal und nutzt lokale Modelle, sofern Ollama entsprechend eingerichtet ist."
         ),
+
         "action_diagnostics": "Diagnose",
         "dialog_diagnostics_title": "Diagnose",
         "diagnostics_text": (
@@ -176,6 +202,7 @@ TRANSLATIONS = {
         ),
         "diagnostics_ollama_ok": "Ollama ist erreichbar.\nModell: {model_name}",
         "diagnostics_ollama_not_ok": "Ollama ist nicht bereit.\n{message}",
+
         "menu_tools": "Werkzeuge",
         "action_document_info": "Dokumentinfo",
         "dialog_document_info_title": "Dokumentinfo",
@@ -188,6 +215,7 @@ TRANSLATIONS = {
             "Geschätzte Lesezeit: {reading_time} Min."
         ),
         "status_document_info_shown": "Dokumentinfo angezeigt",
+
         "dialog_restore_autosave_title": "Nicht gespeichertes Dokument gefunden",
         "restore_autosave_text": (
             "SayScript hat eine automatisch gespeicherte Version eines Dokuments gefunden.\n\n"
@@ -212,6 +240,7 @@ TRANSLATIONS = {
         "action_save_as": "Save As",
         "action_settings": "Settings",
         "action_exit": "Exit",
+
         "action_print": "Print",
         "dialog_print_title": "Print",
         "status_printed": "Document printed",
@@ -351,6 +380,7 @@ TRANSLATIONS = {
         "status_open_cancelled": "Open cancelled",
         "status_save_cancelled": "Save cancelled",
         "status_new_file_cancelled": "New file cancelled",
+
         "menu_help": "Help",
         "action_about": "About SayScript",
         "dialog_about_title": "About SayScript",
@@ -359,6 +389,7 @@ TRANSLATIONS = {
             "Local AI text editor with dictation, voice commands, and Ollama integration.\n\n"
             "This program runs locally and uses local models when Ollama is configured accordingly."
         ),
+
         "action_diagnostics": "Diagnostics",
         "dialog_diagnostics_title": "Diagnostics",
         "diagnostics_text": (
@@ -374,6 +405,7 @@ TRANSLATIONS = {
         ),
         "diagnostics_ollama_ok": "Ollama is reachable.\nModel: {model_name}",
         "diagnostics_ollama_not_ok": "Ollama is not ready.\n{message}",
+
         "menu_tools": "Tools",
         "action_document_info": "Document Info",
         "dialog_document_info_title": "Document Info",
@@ -386,6 +418,7 @@ TRANSLATIONS = {
             "Estimated reading time: {reading_time} min."
         ),
         "status_document_info_shown": "Document info shown",
+
         "dialog_restore_autosave_title": "Unsaved document found",
         "restore_autosave_text": (
             "SayScript found an automatically saved version of a document.\n\n"
@@ -401,7 +434,15 @@ TRANSLATIONS = {
 }
 
 
+# Language selection --------------------------------------------------------
+
 def get_language() -> str:
+    """
+    Return the active interface language code.
+
+    If the settings file contains an unknown language code, German is used as
+    a safe fallback.
+    """
     settings = load_settings()
     language = settings.get("interface_language", "de")
 
@@ -411,7 +452,33 @@ def get_language() -> str:
     return language
 
 
+def get_command_language_module():
+    """
+    Return the language module matching the active interface language.
+
+    The returned module contains command aliases, speech settings, LLM prompts,
+    and other specialized language-specific dictionaries.
+    """
+    language = get_language()
+
+    if language == "en":
+        from app.locales import en
+        return en
+
+    from app.locales import de
+    return de
+
+
+# Generic main-window translation ------------------------------------------
+
 def tr(key: str, **kwargs) -> str:
+    """
+    Return a translated main-window string.
+
+    If the active language does not contain the key, the German translation is
+    used as fallback. If the key is also missing there, the key itself is
+    returned so missing translations remain visible during development.
+    """
     language = get_language()
     text = TRANSLATIONS.get(language, TRANSLATIONS["de"]).get(
         key,
@@ -424,18 +491,10 @@ def tr(key: str, **kwargs) -> str:
     return text
 
 
-def get_command_language_module():
-    language = get_language()
-
-    if language == "en":
-        from app.locales import en
-        return en
-
-    from app.locales import de
-    return de
-
+# Specialized language dictionaries ----------------------------------------
 
 def command_message(key: str, **kwargs) -> str:
+    """Return a localized command-router message."""
     language_module = get_command_language_module()
     messages = getattr(language_module, "MESSAGES", {})
 
@@ -448,12 +507,23 @@ def command_message(key: str, **kwargs) -> str:
 
 
 def speech_language() -> str:
+    """
+    Return the language code used for faster-whisper transcription.
+
+    This usually follows the active interface language.
+    """
     language_module = get_command_language_module()
     return getattr(language_module, "SPEECH_LANGUAGE", "de")
 
 
 def speech_initial_prompt() -> str:
+    """
+    Return the initial prompt used for speech recognition.
+
+    The prompt helps Whisper interpret recordings as dictated text or commands.
+    """
     language_module = get_command_language_module()
+
     return getattr(
         language_module,
         "SPEECH_INITIAL_PROMPT",
@@ -465,6 +535,7 @@ def speech_initial_prompt() -> str:
 
 
 def speech_message(key: str, **kwargs) -> str:
+    """Return a localized speech-recognition message."""
     language_module = get_command_language_module()
     messages = getattr(language_module, "SPEECH_MESSAGES", {})
 
@@ -476,8 +547,14 @@ def speech_message(key: str, **kwargs) -> str:
     return text
 
 
-
 def llm_text_generation_language_name(language_code: str) -> str:
+    """
+    Return a localized human-readable language name for LLM prompts.
+
+    Example:
+        "de" -> "Deutsch"
+        "en" -> "Englisch"
+    """
     language_module = get_command_language_module()
     names = getattr(
         language_module,
@@ -492,6 +569,7 @@ def llm_text_generation_language_name(language_code: str) -> str:
 
 
 def llm_prompt(key: str, **kwargs) -> str:
+    """Return a localized LLM prompt template."""
     language_module = get_command_language_module()
     prompts = getattr(language_module, "LLM_PROMPTS", {})
 
@@ -504,6 +582,7 @@ def llm_prompt(key: str, **kwargs) -> str:
 
 
 def llm_message(key: str, **kwargs) -> str:
+    """Return a localized LLM client message."""
     language_module = get_command_language_module()
     messages = getattr(language_module, "LLM_MESSAGES", {})
 
@@ -515,7 +594,21 @@ def llm_message(key: str, **kwargs) -> str:
     return text
 
 
+def llm_worker_message(key: str, **kwargs) -> str:
+    """Return a localized LLM worker message."""
+    language_module = get_command_language_module()
+    messages = getattr(language_module, "LLM_WORKER_MESSAGES", {})
+
+    text = messages.get(key, key)
+
+    if kwargs:
+        return text.format(**kwargs)
+
+    return text
+
+
 def settings_text(key: str, **kwargs) -> str:
+    """Return a localized settings-dialogue text."""
     language_module = get_command_language_module()
     texts = getattr(language_module, "SETTINGS_DIALOG_TEXTS", {})
 
@@ -528,18 +621,11 @@ def settings_text(key: str, **kwargs) -> str:
 
 
 def voice_command_corrections() -> dict:
+    """
+    Return exact voice-command corrections for the active language.
+
+    These corrections are applied only to recognized voice commands, not to
+    manually typed commands.
+    """
     language_module = get_command_language_module()
     return getattr(language_module, "VOICE_COMMAND_CORRECTIONS", {})
-
-
-def llm_worker_message(key: str, **kwargs) -> str:
-    language_module = get_command_language_module()
-    messages = getattr(language_module, "LLM_WORKER_MESSAGES", {})
-
-    text = messages.get(key, key)
-
-    if kwargs:
-        return text.format(**kwargs)
-
-    return text
-

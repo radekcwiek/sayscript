@@ -1,11 +1,30 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+Settings handling for SayScript.
+
+This module is responsible for building the default settings dictionary,
+loading user settings from disk, and saving changed settings.
+
+The settings file path itself is provided by app.platform_paths so this module
+does not need to know whether it is running on Windows or Linux.
+"""
+
 import json
 
 from app import config
-from app.platform_paths import ensure_app_dirs, get_settings_path
 from app.logging_setup import get_logger
+from app.platform_paths import ensure_app_dirs, get_settings_path
 
 
 def get_default_settings() -> dict:
+    """
+    Return SayScript's default settings.
+
+    Defaults are read from app.config. Keeping the defaults in config.py makes
+    it easy to see the application's baseline behavior in one place, while this
+    module handles persistence.
+    """
     return {
         "ollama_base_url": config.OLLAMA_BASE_URL,
         "ollama_model_name": config.OLLAMA_MODEL_NAME,
@@ -32,6 +51,16 @@ def get_default_settings() -> dict:
 
 
 def load_settings() -> dict:
+    """
+    Load settings from disk and merge them with the current defaults.
+
+    If the settings file does not exist yet, it is created with default values.
+    If loading fails, defaults are returned so the application can still start.
+
+    Returning ``default_settings | loaded_settings`` keeps SayScript compatible
+    with older settings files: new keys from config.py are automatically added,
+    while user-defined values still override the defaults.
+    """
     ensure_app_dirs()
 
     logger = get_logger()
@@ -60,6 +89,12 @@ def load_settings() -> dict:
 
 
 def save_settings(settings: dict) -> None:
+    """
+    Save settings to disk as UTF-8 encoded JSON.
+
+    ``ensure_ascii=False`` keeps German text and other non-ASCII characters
+    readable in the settings file.
+    """
     ensure_app_dirs()
 
     logger = get_logger()

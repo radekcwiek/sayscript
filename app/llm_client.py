@@ -1,5 +1,21 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+Client for local LLM communication through Ollama.
+
+LlmClient is the central interface between SayScript and the local Ollama API.
+It supports three main text operations:
+
+- generate new text from a prompt
+- transform selected text according to an instruction
+- continue existing text
+
+The client can also run in fake-response mode, which is useful for UI testing
+without a running Ollama instance.
+"""
+
 import requests
-from app import config
+
 from app.settings import load_settings
 from app.localization import (
     llm_message,
@@ -9,6 +25,14 @@ from app.localization import (
 
 
 class LlmClient:
+    """
+    Small wrapper around Ollama's local HTTP API.
+
+    Settings are loaded during initialization, but individual connection
+    parameters can be overridden. This is used by the settings dialogue and
+    diagnostics code to test custom values before they become permanent.
+    """
+
     def __init__(
         self,
         model_name: str | None = None,
@@ -38,36 +62,26 @@ class LlmClient:
         else:
             self.use_fake_response = use_fake_response
 
+    # Public text operations ------------------------------------------------
+
     def generate_text(self, prompt: str) -> str:
+        """
+        Generate a new text from a user prompt.
+
+        In fake mode, no HTTP request is made.
+        """
         if self.use_fake_response:
             return self.generate_fake_text(prompt)
 
         return self.generate_with_ollama(prompt)
 
-
-    def generate_fake_text(self, prompt: str) -> str:
-        return llm_message("fake_generation", prompt=prompt)
-
-
-    def generate_with_ollama(self, prompt: str) -> str:
-        return self.request_ollama(
-            prompt=self.build_generation_prompt(prompt),
-            temperature=self.settings["generate_temperature"],
-            num_predict=self.settings["generate_num_predict"],
-        )
-
-
-    def build_generation_prompt(self, user_prompt: str) -> str:
-        output_language = self.get_text_generation_language_name()
-
-        return llm_prompt(
-            "generation",
-            output_language=output_language,
-            user_prompt=user_prompt,
-        )
-
-
     def transform_text(self, instruction: str, selected_text: str) -> str:
+        """
+        Transform selected text according to a user instruction.
+
+        Example instructions could be "make this shorter" or
+        "rewrite this in a more formal tone".
+        """
         if self.use_fake_response:
             return llm_message(
                 "fake_transform",
@@ -77,16 +91,58 @@ class LlmClient:
 
         return self.transform_with_ollama(instruction, selected_text)
 
+    def continue_text(self, context_text: str) -> str:
+        """
+        Continue existing text using the current document context.
+        """
+        if self.use_fake_response:
+            return llm_message(
+                "fake_continue",
+                context_text=context_text,
+            )
+
+        return self.continue_with_ollama(context_text)
+
+    # Ollama-backed operations ---------------------------------------------
+
+    def generate_with_ollama(self, prompt: str) -> str:
+        """Generate text through Ollama."""
+        return self.request_ollama(
+            prompt=self.build_generation_prompt(prompt),
+            temperature=self.settings["generate_temperature"],
+            num_predict=self.settings["generate_num_predict"],
+        )
 
     def transform_with_ollama(self, instruction: str, selected_text: str) -> str:
+        """Transform selected text through Ollama."""
         return self.request_ollama(
             prompt=self.build_transform_prompt(instruction, selected_text),
             temperature=self.settings["transform_temperature"],
             num_predict=self.settings["transform_num_predict"],
         )
 
+    def continue_with_ollama(self, context_text: str) -> str:
+        """Continue text through Ollama."""
+        return self.request_ollama(
+            prompt=self.build_continue_prompt(context_text),
+            temperature=self.settings["continue_temperature"],
+            num_predict=self.settings["continue_num_predict"],
+        )
+
+    # Prompt builders -------------------------------------------------------
+
+    def build_generation_prompt(self, user_prompt: str) -> str:
+        """Build the localized prompt used for text generation."""
+        output_language = self.get_text_generation_language_name()
+
+        return llm_prompt(
+            "generation",
+            output_language=output_language,
+            user_prompt=user_prompt,
+        )
 
     def build_transform_prompt(self, instruction: str, selected_text: str) -> str:
+        """Build the localized prompt used for selected-text transformation."""
         output_language = self.get_text_generation_language_name()
 
         return llm_prompt(
@@ -96,26 +152,8 @@ class LlmClient:
             selected_text=selected_text,
         )
 
-
-    def continue_text(self, context_text: str) -> str:
-        if self.use_fake_response:
-            return llm_message(
-                "fake_continue",
-                context_text=context_text,
-            )
-
-        return self.continue_with_ollama(context_text)
-
-
-    def continue_with_ollama(self, context_text: str) -> str:
-        return self.request_ollama(
-            prompt=self.build_continue_prompt(context_text),
-            temperature=self.settings["continue_temperature"],
-            num_predict=self.settings["continue_num_predict"],
-        )
-
-
     def build_continue_prompt(self, context_text: str) -> str:
+        """Build the localized prompt used for text continuation."""
         output_language = self.get_text_generation_language_name()
 
         return llm_prompt(
@@ -124,6 +162,7 @@ class LlmClient:
             context_text=context_text,
         )
 
+    # HTTP communication ----------------------------------------------------
 
     def request_ollama(
         self,
@@ -131,6 +170,14 @@ class LlmClient:
         temperature: float,
         num_predict: int,
     ) -> str:
+        """
+        Send a non-streaming chat request to Ollama and return the response text.
+
+        SayScript uses /api/chat instead of /api/generate because chat models
+        often behave more reliably with this endpoint. The "think": False flag
+        is used for thinking-capable models that support disabling reasoning
+        output.
+        """
         url = f"{self.base_url}/api/chat"
 
         payload = {
@@ -182,8 +229,15 @@ class LlmClient:
 
         return generated_text
 
+    # Status checks ---------------------------------------------------------
 
     def check_ollama_status(self) -> dict:
+        """
+        Check whether Ollama is reachable and whether the configured model exists.
+
+        Returns a small dictionary that can be displayed in the settings dialogue
+        or diagnostics dialogue.
+        """
         url = f"{self.base_url}/api/tags"
 
         try:
@@ -242,7 +296,20 @@ class LlmClient:
             "models": model_names,
         }
 
+    # Helpers ---------------------------------------------------------------
+
+    def generate_fake_text(self, prompt: str) -> str:
+        """
+        Return a localized fake response for development and UI testing.
+        """
+        return llm_message("fake_generation", prompt=prompt)
 
     def get_text_generation_language_name(self) -> str:
+        """
+        Return the localized language name used inside LLM prompts.
+
+        The settings store a compact language code such as "de" or "en".
+        Prompt templates use a human-readable language name.
+        """
         language_code = self.settings.get("text_generation_language", "de")
         return llm_text_generation_language_name(language_code)

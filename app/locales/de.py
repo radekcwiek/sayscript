@@ -1,3 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+German language data for SayScript.
+
+This module contains German command aliases, speech-recognition settings,
+localized messages, LLM prompts, settings-dialogue texts, and voice-command
+corrections.
+
+The data is used through app.localization. Application code should usually call
+helper functions such as command_message(), llm_prompt(), or settings_text()
+instead of importing these dictionaries directly.
+"""
+
+
+# Command aliases -----------------------------------------------------------
+#
+# Each key is an internal CommandRouter action. Each value is a set of German
+# phrases that should trigger that action.
+
 COMMAND_ALIASES = {
     "bold": {
         "fett",
@@ -259,6 +279,11 @@ COMMAND_ALIASES = {
 }
 
 
+# Argument command prefixes -------------------------------------------------
+#
+# These prefixes are used by CommandRouter to parse commands that carry an
+# argument, for example a font size, search text, or LLM prompt.
+
 FONT_SIZE_PREFIXES = {
     "schriftgröße",
     "schriftgroesse",
@@ -341,6 +366,11 @@ TRANSFORM_SELECTION_PREFIXES = {
     "bearbeite markierung",
 }
 
+
+# Command-router messages ---------------------------------------------------
+#
+# These messages are shown after commands are executed or rejected.
+
 MESSAGES = {
     "unknown_command": "Unbekannter Befehl: {command}",
     "command_corrected": "Befehl korrigiert: {original} → {alias}",
@@ -391,6 +421,11 @@ MESSAGES = {
     "font_size_out_of_range": "Schriftgröße muss zwischen 6 und 96 liegen",
 }
 
+
+# Speech recognition --------------------------------------------------------
+#
+# These values configure German dictation and speech-command recognition.
+
 SPEECH_LANGUAGE = "de"
 
 SPEECH_INITIAL_PROMPT = (
@@ -403,10 +438,23 @@ SPEECH_MESSAGES = {
     "transcription_error": "Transkriptionsfehler: {error}",
 }
 
+
+# LLM language names --------------------------------------------------------
+#
+# These labels are inserted into LLM prompts as human-readable target
+# languages.
+
 LLM_TEXT_GENERATION_LANGUAGE_NAMES = {
     "de": "Deutsch",
     "en": "Englisch",
 }
+
+
+# LLM prompts ---------------------------------------------------------------
+#
+# These prompt templates are passed to the local LLM. They deliberately ask for
+# direct output without explanations because the result is inserted into the
+# editor document.
 
 LLM_PROMPTS = {
     "generation": (
@@ -442,6 +490,12 @@ LLM_PROMPTS = {
         "Bisheriger Text:\n{context_text}"
     ),
 }
+
+
+# LLM client messages -------------------------------------------------------
+#
+# These messages are returned by LlmClient for fake responses and Ollama
+# connection problems.
 
 LLM_MESSAGES = {
     "fake_generation": (
@@ -485,6 +539,11 @@ LLM_MESSAGES = {
     "ollama_status_model_found": "Ollama ist erreichbar. Modell gefunden: {model_name}",
     "ollama_status_model_not_found": "Ollama ist erreichbar, aber Modell nicht gefunden: {model_name}",
 }
+
+
+# Settings-dialogue texts -----------------------------------------------------
+#
+# These strings are used only by SettingsDialog.
 
 SETTINGS_DIALOG_TEXTS = {
     "title": "Einstellungen",
@@ -582,10 +641,17 @@ SETTINGS_DIALOG_TEXTS = {
     "ollama_found_models": "Gefundene Modelle:",
     "ollama_test_success": "Ollama ist erreichbar.\n\n{message}\n\nModelle:\n{models}",
     "ollama_test_failure": "Ollama-Test fehlgeschlagen.\n\n{message}",
+
     "autosave_group": "Auto-Save",
     "enable_autosave": "Auto-Save aktivieren",
     "autosave_interval_seconds": "Intervall in Sekunden",
 }
+
+
+# Voice-command corrections -------------------------------------------------
+#
+# Whisper may add punctuation words or produce ASCII fallback spellings.
+# These corrections are applied only to recognized voice commands.
 
 VOICE_COMMAND_CORRECTIONS = {
     "fett punkt": "fett",
@@ -641,6 +707,11 @@ VOICE_COMMAND_CORRECTIONS = {
     "wörter zählen punkt": "wörter zählen",
     "woerter zaehlen punkt": "woerter zaehlen",
 }
+
+
+# LLM worker messages -------------------------------------------------------
+#
+# These messages are emitted by LlmWorker when an asynchronous LLM task fails.
 
 LLM_WORKER_MESSAGES = {
     "no_selection": "Keine Auswahl für KI-Bearbeitung vorhanden.",

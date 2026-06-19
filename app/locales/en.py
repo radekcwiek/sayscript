@@ -1,3 +1,23 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""
+English language data for SayScript.
+
+This module contains English command aliases, speech-recognition settings,
+localized messages, LLM prompts, settings-dialogue texts, and voice-command
+corrections.
+
+The data is used through app.localization. Application code should usually call
+helper functions such as command_message(), llm_prompt(), or settings_text()
+instead of importing these dictionaries directly.
+"""
+
+
+# Command aliases -----------------------------------------------------------
+#
+# Each key is an internal CommandRouter action. Each value is a set of English
+# phrases that should trigger that action.
+
 COMMAND_ALIASES = {
     "bold": {
         "bold",
@@ -205,6 +225,11 @@ COMMAND_ALIASES = {
 }
 
 
+# Argument command prefixes -------------------------------------------------
+#
+# These prefixes are used by CommandRouter to parse commands that carry an
+# argument, for example a font size, search text, or LLM prompt.
+
 FONT_SIZE_PREFIXES = {
     "font size",
     "text size",
@@ -270,6 +295,11 @@ TRANSFORM_SELECTION_PREFIXES = {
     "make selection shorter",
 }
 
+
+# Command-router messages ---------------------------------------------------
+#
+# These messages are shown after commands are executed or rejected.
+
 MESSAGES = {
     "unknown_command": "Unknown command: {command}",
     "command_corrected": "Command corrected: {original} → {alias}",
@@ -320,6 +350,11 @@ MESSAGES = {
     "font_size_out_of_range": "Font size must be between 6 and 96",
 }
 
+
+# Speech recognition --------------------------------------------------------
+#
+# These values configure English dictation and speech-command recognition.
+
 SPEECH_LANGUAGE = "en"
 
 SPEECH_INITIAL_PROMPT = (
@@ -332,10 +367,23 @@ SPEECH_MESSAGES = {
     "transcription_error": "Transcription error: {error}",
 }
 
+
+# LLM language names --------------------------------------------------------
+#
+# These labels are inserted into LLM prompts as human-readable target
+# languages.
+
 LLM_TEXT_GENERATION_LANGUAGE_NAMES = {
     "de": "German",
     "en": "English",
 }
+
+
+# LLM prompts ---------------------------------------------------------------
+#
+# These prompt templates are passed to the local LLM. They deliberately ask for
+# direct output without explanations because the result is inserted into the
+# editor document.
 
 LLM_PROMPTS = {
     "generation": (
@@ -371,6 +419,12 @@ LLM_PROMPTS = {
         "Existing text:\n{context_text}"
     ),
 }
+
+
+# LLM client messages -------------------------------------------------------
+#
+# These messages are returned by LlmClient for fake responses and Ollama
+# connection problems.
 
 LLM_MESSAGES = {
     "fake_generation": (
@@ -414,6 +468,11 @@ LLM_MESSAGES = {
     "ollama_status_model_found": "Ollama is reachable. Model found: {model_name}",
     "ollama_status_model_not_found": "Ollama is reachable, but model not found: {model_name}",
 }
+
+
+# Settings-dialogue texts -----------------------------------------------------
+#
+# These strings are used only by SettingsDialog.
 
 SETTINGS_DIALOG_TEXTS = {
     "title": "Settings",
@@ -517,6 +576,12 @@ SETTINGS_DIALOG_TEXTS = {
     "autosave_interval_seconds": "Interval in seconds",
 }
 
+
+# Voice-command corrections -------------------------------------------------
+#
+# Whisper may add punctuation words. These corrections are applied only to
+# recognized voice commands, not to manually typed commands.
+
 VOICE_COMMAND_CORRECTIONS = {
     "bold period": "bold",
     "bold dot": "bold",
@@ -571,6 +636,11 @@ VOICE_COMMAND_CORRECTIONS = {
     "document statistics period": "document statistics",
     "text statistics period": "text statistics",
 }
+
+
+# LLM worker messages -------------------------------------------------------
+#
+# These messages are emitted by LlmWorker when an asynchronous LLM task fails.
 
 LLM_WORKER_MESSAGES = {
     "no_selection": "No selection available for AI editing.",
