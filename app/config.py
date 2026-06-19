@@ -61,8 +61,8 @@ SPEECH_BEAM_SIZE = 10
 
 # User interface defaults --------------------------------------------------
 
-SHOW_COMMAND_INPUT = True
-SHOW_SPEECH_RESULT = True
+SHOW_COMMAND_INPUT = False
+SHOW_SPEECH_RESULT = False
 
 INTERFACE_LANGUAGE = "de"
 TEXT_GENERATION_LANGUAGE = "de"

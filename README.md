@@ -1,6 +1,6 @@
 # SayScript
 
-SayScript is a local AI-assisted text editor with dictation, voice commands, and text generation through a locally running LLM.
+SayScript is a local AI-assisted text editor with dictation, voice commands, and text generation through a locally running LLM. 
 
 The application is built with Python and PySide6. It supports classic text editing, speech-to-text dictation, voice-controlled commands, local AI text generation and transformation, PDF export, printing, localization, logging, diagnostics, document autosave and recovery and configurable settings.
 
@@ -74,22 +74,22 @@ main.py
 
 ### Main Components
 
-| Component                 | Responsibility                                  |
-| ------------------------- | ----------------------------------------------- |
-| `main_window.py`          | Main GUI, editor, menus, dialogs, file handling |
-| `command_router.py`       | Parses typed and spoken commands                |
-| `llm_client.py`           | Communicates with Ollama                        |
-| `llm_worker.py`           | Runs AI tasks outside the UI thread             |
-| `speech/recorder.py`      | Records microphone input                        |
-| `speech/transcriber.py`   | Transcribes audio with faster-whisper           |
-| `speech/speech_worker.py` | Runs transcription outside the UI thread        |
-| `settings.py`             | Loads and saves application settings            |
-| `settings_dialog.py`      | GUI for editing settings                        |
-| `localization.py`         | Provides translated UI strings                  |
-| `locales/de.py`           | German command aliases, prompts, and messages   |
-| `locales/en.py`           | English command aliases, prompts, and messages  |
-| `platform_paths.py`       | Provides Windows/Linux-compatible app paths     |
-| `logging_setup.py`        | Configures rotating log files                   |
+| Component                 | Responsibility                                    |
+| ------------------------- | ------------------------------------------------- |
+| `main_window.py`          | Main GUI, editor, menus, dialogues, file handling |
+| `command_router.py`       | Parses typed and spoken commands                  |
+| `llm_client.py`           | Communicates with Ollama                          |
+| `llm_worker.py`           | Runs AI tasks outside the UI thread               |
+| `speech/recorder.py`      | Records microphone input                          |
+| `speech/transcriber.py`   | Transcribes audio with faster-whisper             |
+| `speech/speech_worker.py` | Runs transcription outside the UI thread          |
+| `settings.py`             | Loads and saves application settings              |
+| `settings_dialog.py`      | GUI for editing settings                          |
+| `localization.py`         | Provides translated UI strings                    |
+| `locales/de.py`           | German command aliases, prompts, and messages     |
+| `locales/en.py`           | English command aliases, prompts, and messages    |
+| `platform_paths.py`       | Provides Windows/Linux-compatible app paths       |
+| `logging_setup.py`        | Configures rotating log files                     |
 
 ## Local AI and Privacy
 
@@ -98,7 +98,7 @@ Text generation and transformation can run locally, depending on the installed O
 
 This means text does not need to be sent to a cloud service for AI processing.
 
-The current default model can be configured in the settings dialog.
+The current default model `qwen3:8b` can be reconfigured in the settings dialog.
 
 ## Requirements
 
@@ -106,7 +106,7 @@ The current default model can be configured in the settings dialog.
 * Ollama installed and running locally
 * An installed Ollama model, for example `qwen3:8b`
 * Microphone access for dictation and voice commands
-* System with 16 GB RAM for a `faster-whisper` and `qwen3:8b` configuration. 
+* System with 16 GB RAM for the default`faster-whisper` and `qwen3:8b` configuration. 
 
 A dedicated graphics adapter with at least 8 GB VRAM is recommended for better performance, but not required. 
 
@@ -303,6 +303,9 @@ Examples of supported German commands:
 fett
 kursiv
 speichern
+schriftgröße 42
+liste
+überschrift 1
 öffne einstellungen
 exportiere als pdf
 drucken
@@ -319,6 +322,9 @@ Examples of supported English commands:
 bold
 italic
 save
+font size 47
+list
+heading 1
 open settings
 export as pdf
 print
@@ -326,7 +332,7 @@ diagnostics
 about sayscript
 generate a text about dogs
 search for dog
-replace dog with cat
+replace cat with dog
 ```
 
 ## Current Status
@@ -354,14 +360,21 @@ Implemented:
 
 Planned:
 
-* improved Linux packaging
-* Windows release package
-* additional tests
 * optional DOCX export
 
 ## Screenshots
 
-Screenshots will be added later.
+### Main editor
+
+<img src="docs/screenshots/main-window.png" alt="SayScript main editor" width="800">
+
+### Settings
+
+<img src="docs/screenshots/settings-dialog.png" alt="SayScript settings dialog" width="600">
+
+### Local AI diagnostics
+
+<img src="docs/screenshots/diagnostics.png" alt="SayScript diagnostics dialog" width="600">
 
 ## License
 
