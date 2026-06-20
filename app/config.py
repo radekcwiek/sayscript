@@ -64,8 +64,8 @@ SPEECH_BEAM_SIZE = 10
 SHOW_COMMAND_INPUT = False
 SHOW_SPEECH_RESULT = False
 
-INTERFACE_LANGUAGE = "de"
-TEXT_GENERATION_LANGUAGE = "de"
+INTERFACE_LANGUAGE = "en"
+TEXT_GENERATION_LANGUAGE = "en"
 
 
 # Auto-save defaults -------------------------------------------------------

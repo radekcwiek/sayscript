@@ -373,6 +373,12 @@ Planned:
 
 <img src="docs/screenshots/main-window.png" alt="SayScript main editor" width="800">
 
+### Main editor additional features
+
+You can configure the main window to display a command input and a recognized speech status bar for debugging and testing purposes.
+
+<img src="docs/screenshots/main-window-extras.png" alt="SayScript main editor extras" width="800">
+
 ### Settings
 
 <img src="docs/screenshots/settings-dialog.png" alt="SayScript settings dialog" width="600">
