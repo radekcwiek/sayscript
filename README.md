@@ -1,6 +1,6 @@
 # SayScript
 
-SayScript is a local AI-assisted text editor with dictation, voice commands, and text generation through a locally running LLM. 
+SayScript is a local AI-assisted rich text editor with dictation, voice commands, and text generation and transformation through a locally running LLM. 
 
 The application is built with Python and PySide6. It supports classic text editing, speech-to-text dictation, voice-controlled commands, local AI text generation and transformation, PDF export, printing, localization, logging, diagnostics, document autosave and recovery and configurable settings.
 
@@ -108,7 +108,7 @@ The current default model `qwen3:8b` can be reconfigured in the settings dialog.
 * Microphone access for dictation and voice commands
 * System with 16 GB RAM for the default`faster-whisper` and `qwen3:8b` configuration. 
 
-A dedicated graphics adapter with at least 8 GB VRAM is recommended for better performance, but not required. 
+A dedicated graphics adapter with at least 8 GB VRAM is strongly recommended for better performance, but not required. 
 
 
 ## Installation
@@ -337,6 +337,8 @@ replace cat with dog
 transform selection to french
 ```
 
+A voice command reference can be found at the bottom of this document.
+
 ## Current Status
 
 SayScript is under active development.
@@ -363,6 +365,7 @@ Implemented:
 Planned:
 
 * optional DOCX export
+* MacOS version
 
 ## Screenshots
 
@@ -377,6 +380,92 @@ Planned:
 ### Local AI diagnostics
 
 <img src="docs/screenshots/diagnostics.png" alt="SayScript diagnostics dialog" width="600">
+
+## Voice Command Reference
+
+SayScript supports voice commands in German and English. The active command language follows the selected interface language in the settings.
+
+Voice commands can control formatting, file actions, search and replace, local AI text generation, speech settings, diagnostics, and document information.
+
+### Basic editing
+
+| Action           | German examples                        | English examples                           |
+| ---------------- | -------------------------------------- | ------------------------------------------ |
+| Bold             | `fett`, `mach fett`                    | `bold`, `make bold`                        |
+| Italic           | `kursiv`, `mach kursiv`                | `italic`, `make italic`                    |
+| Delete selection | `lösche auswahl`, `markierung löschen` | `delete selection`, `remove selected text` |
+| Select all       | `alles markieren`, `alles auswählen`   | `select all`, `select everything`          |
+| New line         | `neue zeile`, `zeilenumbruch`          | `new line`, `line break`                   |
+| Undo             | `rückgängig`, `undo`                   | `undo`                                     |
+| Redo             | `wiederholen`, `redo`                  | `redo`                                     |
+| Cut              | `ausschneiden`, `auswahl ausschneiden` | `cut`, `cut selection`                     |
+| Copy             | `kopieren`, `auswahl kopieren`         | `copy`, `copy selection`                   |
+| Paste            | `einfügen`, `text einfügen`            | `paste`, `insert from clipboard`           |
+
+### File commands
+
+| Action        | German examples                         | English examples                  |
+| ------------- | --------------------------------------- | --------------------------------- |
+| New document  | `neu`, `neue datei`, `neues dokument`   | `new`, `new file`, `new document` |
+| Open file     | `öffnen`, `datei öffnen`                | `open`, `open file`               |
+| Save file     | `speichern`, `datei speichern`          | `save`, `save file`               |
+| Export as PDF | `exportiere als pdf`, `pdf exportieren` | `export as pdf`, `export pdf`     |
+| Print         | `drucken`, `ausdrucken`                 | `print`, `print document`         |
+
+### Formatting commands
+
+| Action                 | German examples                             | English examples                     |
+| ---------------------- | ------------------------------------------- | ------------------------------------ |
+| Heading 1              | `überschrift 1`, `hauptüberschrift`         | `heading 1`, `title`                 |
+| Heading 2              | `überschrift 2`, `unterüberschrift`         | `heading 2`, `subtitle`              |
+| Normal text            | `normaler text`, `normaltext`               | `normal text`, `regular text`        |
+| Align left             | `linksbündig`, `links ausrichten`           | `align left`, `left align`           |
+| Align center           | `zentrieren`, `mittig`                      | `align center`, `center text`        |
+| Align right            | `rechtsbündig`, `rechts ausrichten`         | `align right`, `right align`         |
+| Bullet list            | `liste`, `aufzählungsliste`                 | `bullet list`, `list with bullets`   |
+| Numbered list          | `nummerierte liste`, `zahlenliste`          | `numbered list`, `list with numbers` |
+| Remove list formatting | `liste entfernen`, `listenformat entfernen` | `remove list`, `remove bullets`      |
+| Indent                 | `einrücken`, `text einrücken`               | `indent`, `indent text`              |
+| Outdent                | `ausrücken`, `text ausrücken`               | `outdent`, `decrease indent`         |
+| Font size              | `schriftgröße 14`, `größe 18`               | `font size 14`, `size 18`            |
+| Font family            | `schriftart Arial`, `schrift Calibri`       | `font Arial`, `font family Calibri`  |
+
+### Text commands
+
+| Action                  | German examples                                   | English examples                          |
+| ----------------------- | ------------------------------------------------- | ----------------------------------------- |
+| Insert text             | `füge ein Hallo Welt`, `text einfügen Hallo Welt` | `insert Hello world`, `write Hello world` |
+| Search text             | `suche nach Hund`, `finde Hund`                   | `search for dog`, `find dog`              |
+| Replace selected text   | `ersetze auswahl durch Katze`                     | `replace selection with cat`              |
+| Replace next occurrence | `ersetze Hund durch Katze`                        | `replace dog with cat`                    |
+
+### Local AI commands
+
+| Action                  | German examples                                                            | English examples                                                              |
+| ----------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Generate text           | `generiere einen text über Hunde`, `verfasse eine Einleitung zu KI`        | `generate a text about dogs`, `draft an introduction to AI`                   |
+| Transform selected text | `formuliere auswahl um`, `verbessere auswahl`, `mache auswahl französisch` | `rewrite selection`, `improve selected text`, `transform selection to french` |
+| Continue text           | `schreibe weiter`, `text fortsetzen`                                       | `continue`, `continue text`                                                   |
+| AI status               | `ki status`, `ollama status`                                               | `ai status`, `ollama status`                                                  |
+| Test Ollama             | `ollama test`, `teste ollama`                                              | `ollama test`, `test ollama`                                                  |
+
+### App and diagnostics commands
+
+| Action          | German examples                               | English examples                             |
+| --------------- | --------------------------------------------- | -------------------------------------------- |
+| Open settings   | `einstellungen`, `konfiguration öffnen`       | `settings`, `open settings`                  |
+| About SayScript | `über sayscript`, `version`                   | `about sayscript`, `version`                 |
+| Diagnostics     | `diagnose`, `systemcheck`                     | `diagnostics`, `system check`                |
+| Document info   | `dokumentinfo`, `wortzähler`, `wörter zählen` | `document info`, `word count`, `count words` |
+
+### Notes
+
+* Voice commands are interpreted in the currently selected interface language.
+* Some commands have multiple aliases. The examples above show the most useful forms.
+* Dictation and voice commands are separate modes: dictation inserts spoken text, while voice commands control the editor.
+* For AI transformation commands, select text first and then say a command such as `verbessere auswahl` or `improve selection`.
+* For AI continuation, place the cursor after existing text and say `schreibe weiter` or `continue`.
+
 
 ## License
 
