@@ -371,21 +371,21 @@ Planned:
 
 ### Main editor
 
-<img src="docs/screenshots/main-window.png" alt="SayScript main editor" width="800">
+<img src="docs/screenshots/main-window.png" alt="SayScript main editor" width="600">
 
 ### Main editor additional features
 
 You can configure the main window to display a command input and a recognized speech status bar for debugging and testing purposes.
 
-<img src="docs/screenshots/main-window-extras.png" alt="SayScript main editor extras" width="800">
+<img src="docs/screenshots/main-window-extras.png" alt="SayScript main editor extras" width="600">
 
 ### Settings
 
-<img src="docs/screenshots/settings-dialog.png" alt="SayScript settings dialog" width="600">
+<img src="docs/screenshots/settings-dialogue.png" alt="SayScript settings dialogue" width="600">
 
 ### Local AI diagnostics
 
-<img src="docs/screenshots/diagnostics.png" alt="SayScript diagnostics dialog" width="600">
+<img src="docs/screenshots/diagnostics.png" alt="SayScript diagnostics dialogue" width="600">
 
 ## Voice Command Reference
 
