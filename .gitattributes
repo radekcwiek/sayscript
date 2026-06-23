@@ -1,4 +1,4 @@
-# Default: let Git detect text files.
+# Default setting: let Git detect text files.
 * text=auto
 
 # Linux/macOS shell scripts must always use LF.
