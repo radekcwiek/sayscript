@@ -106,10 +106,9 @@ The current default model `qwen3:8b` can be reconfigured in the settings dialog.
 * Ollama installed and running locally
 * An installed Ollama model, for example `qwen3:8b`
 * Microphone access for dictation and voice commands
-* System with 16 GB RAM for the default`faster-whisper` and `qwen3:8b` configuration. 
-
-A dedicated graphics adapter with at least 8 GB VRAM is strongly recommended for better performance, but not required. 
-
+* System with 16 GB RAM for the default`faster-whisper` and `qwen3:8b` configuration.
+* System with 8 GB RAM for a `faster-whisper` and `qwen3:4b-instruct-2507-q4_K_M` configuration.
+* A dedicated graphics adapter with at least 8 GB VRAM is strongly recommended for better Ollama performance, but not required. 
 
 ## Installation
 
@@ -142,11 +141,19 @@ On Linux, additional system packages may be required for audio input, Qt, or pri
 
 ### Local AI Models
 
-Ollama can be downloaded here: [Ollama](https://ollama.com). We recommend using the `qwen3:8b` model, which can be installed and started like this:
+Ollama can be downloaded here: [Ollama](https://ollama.com). We recommend using the `qwen3:8b` model:
 
 ```text
-ollama run qwen3:8b
+ollama pull qwen3:8b
 ```
+
+Alternatively, a model with lower memory requirements can be used, for example:
+
+```bash
+ollama pull qwen3:4b-instruct-2507-q4_K_M
+```
+
+Using `qwen3:4b` is currently not recommended, since it produces thinking output in the editor.
 
 SayScript connects to Ollama through the configured local endpoint, by default:
 
